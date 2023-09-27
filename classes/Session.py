@@ -15,10 +15,17 @@ def colorFader(c1,c2,mix=0): #fade (linear interpolate) from color c1 (at mix=0)
 class Session:
 	def __init__(self, df, monkey_input, task, behavioral_code_dict):
 		print('Creating Session Objects...')
-		self.df = df
+	
+		if df is not None:
+			self.df = df
+			self.date = df['date'].iloc[0]
+			df_flag = True
+		else:
+			self.df = None
+			self.date = None
+			df_flag = False
 		self.monkey = monkey_input
 		self.task = task
-		self.date = df['date'].iloc[0]
 		self.window_lick = 1000
 		# determine lick threshold
 		self.estimate_lick_threshold()
@@ -47,14 +54,15 @@ class Session:
 		self.figure_path = ''
 		self.tracker_path = ''
 		self.video_path = ''
-		# print all the session attributes
-		df = self.df
-		self.parse_stim_labels()
-		self.parse_valence_labels(df)
-		self.generate_colors()
-		self.calculate_datetime()
-		self.find_offscreen_values()
-		self.find_outcome_parameters()
+		
+		# specific to each task
+		if df_flag:
+			self.parse_stim_labels()
+			self.parse_valence_labels()
+			self.generate_colors()
+			self.calculate_datetime()
+			self.find_offscreen_values()
+			self.find_outcome_parameters()
 		self.behavior_summary(behavioral_code_dict)
 	
 	def estimate_lick_threshold(self):
@@ -65,20 +73,15 @@ class Session:
 		print('Lick threshold: {} mV'.format(self.lick_threshold))
 
 	def parse_stim_labels(self):
+		"""Get the unique fractal labels for each session"""
 		unique_fractals = self.df['stimuli_name_1'].unique()
 		# remove error label
 		unique_fractals = [fractal for fractal in unique_fractals if 'error' not in fractal]
 		self.stim_labels = sorted([fractal.split('_')[-1] for fractal in unique_fractals])
 
-	def parse_valence_labels(self, df):
-		"""
-		Parses valence labels
-
-		Args:
-			self		: session object
-			df			: session_df DataFrame
-			
-		"""
+	def parse_valence_labels(self):
+		"""Parses valence labels based on the reward magnitude and airpuff magnitude"""
+		df = self.df.copy()
 		if 'reward_mag_1' in df.columns:
 			reward_mag_col = 'reward_mag_1'
 			airpuff_mag_col = 'airpuff_mag_1'
@@ -107,6 +110,7 @@ class Session:
 			self.valence_labels[1] = '(++)'
 
 	def generate_colors(self):
+		"""Generate colors for each valence"""
 		n = len(self.stim_labels)
 		c1 = '#452c49' # dark magenta
 		c2 = '#99ffff' # light cyan
@@ -116,6 +120,7 @@ class Session:
 			self.colors.append(color)
 
 	def calculate_datetime(self):
+		"""Calculate the session number, session length, and session time"""
 		session = self.df
 		self.session_num = session['session_num'].iloc[0]
 		session_length = session['trial_start'].iloc[-1]
@@ -128,6 +133,7 @@ class Session:
 		self.session_time = session_time
 
 	def save_paths(self, TASK_PATH, TRACKER_PATH, VIDEO_PATH, FIGURE_PATH):
+		"""Save the paths for each session"""
 		self.task_path = TASK_PATH
 		self.tracker_path = TRACKER_PATH
 		session_video_path = os.path.join(VIDEO_PATH, self.date + '_' + self.monkey)
@@ -163,6 +169,10 @@ class Session:
 		self.blink_signal['eye_y_max'] = eye_y_max
 
 	def find_outcome_parameters(self):
+		"""
+		Finds the reward and airpuff parameters for each session.
+		For choice sessions, values are in 'reward_mag_1' and 'airpuff_mag_1'.
+		For reinforcement only sesssions, values are in 'reward_mag' and 'airpuff_mag'."""
 		df = self.df.copy()
 		df = df.loc[(df['correct'] == 1) & (df['reinforcement_trial'] == 1)]
 		if 'reward_mag_1' in df.columns:
@@ -209,6 +219,7 @@ class Session:
 			self.airpuff_outcome_params['airpuff_freq'][mag] = airpuff_freq		
 
 	def behavior_summary(self, behavioral_code_dict):
+		"""Calculates the behavioral summary for each session"""
 		df = self.df
 		OUTCOME_SELECTED = [0,9]
 		# attempts per min

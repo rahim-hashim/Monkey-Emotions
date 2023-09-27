@@ -9,10 +9,10 @@ echo "Target path is:"
 echo "  $target_path"
 
 # set monkey variable to Aragorn
-monkey=""
+monkey="Bear"
 # set date variable to todays date (i.e. YYMMDD)
 # date_str=$(date +%y%m%d)
-date_str='230925'
+date_str='230926'
 if [ -z "$monkey" ]; then
   echo "Searching for all monkeys for $date_str"
 else

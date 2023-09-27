@@ -8,7 +8,7 @@ import h5_helper
 import preprocess_helper
 from add_fields import add_fields
 # Custom classes
-from classes.Path import Path
+from classes.Session_Path import Path
 from classes.Session import Session
 pd.options.mode.chained_assignment = None  # default='warn'
 

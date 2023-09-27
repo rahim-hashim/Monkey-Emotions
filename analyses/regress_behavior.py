@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from pprint import pprint
 from classes.Session import Session
-from classes.Path import Path
+from classes.Session_Path import Path
 import matplotlib.pyplot as plt
 from add_fields import add_fields
 pd.options.mode.chained_assignment = None  # default='warn'

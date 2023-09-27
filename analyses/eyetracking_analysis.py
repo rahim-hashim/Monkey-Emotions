@@ -101,9 +101,7 @@ def eyetracking_analysis(df, session_obj, TRIAL_THRESHOLD):
 		H_norm = H_norm.T # see np.histogram2d documentation for details
 		# ax2.imshow(H, cmap=cmap, extent=(axis_min, axis_max, axis_min, axis_max), 
 		#             interpolation='spline16')
-		if valence > 0 or valence < 0:
-			vmin,vmax = 0.0,0.5 # to set the same colorbar for all plots
-		# vmin,vmax = None,None
+		vmin,vmax = 0.0,0.5 # to set the same colorbar for all plots
 		im = ax2.pcolormesh(xedges, yedges, H_norm, vmin=vmin,vmax=vmax, cmap=cmap)
 		ax2.set_xlabel('x')
 		ax2.set_ylabel('y')
