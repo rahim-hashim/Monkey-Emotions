@@ -152,3 +152,5 @@ cython_debug/
 #.idea/
 *.png
 *.mp4
+*.prproj
+video/Bear_230823/.DS_Store
