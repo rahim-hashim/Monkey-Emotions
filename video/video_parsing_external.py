@@ -5,6 +5,7 @@ import math
 import itertools
 import numpy as np
 from tqdm.auto import tqdm
+from threading import Thread
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from collections import defaultdict
@@ -18,27 +19,27 @@ from classes import FaceLandmarks
 from analyses.eye_capture import frame_eye_capture
 
 def make_video(frames, frame_rate, frame_size, video_name):
-  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-  video = cv2.VideoWriter(video_name, fourcc, frame_rate, frame_size)
-  for frame in frames:
-    video.write(frame)
-  video.release()
+	fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+	video = cv2.VideoWriter(video_name, fourcc, frame_rate, frame_size)
+	for frame in frames:
+		video.write(frame)
+	video.release()
 
 def play_video(video_name):
-  video = cv2.VideoCapture(video_name)
-  while True:
-    ret, frame = video.read()
-    if not ret:
-      break
-    cv2.imshow('frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-      break
-  video.release()
-  cv2.destroyAllWindows()
+	video = cv2.VideoCapture(video_name)
+	while True:
+		ret, frame = video.read()
+		if not ret:
+			break
+		cv2.imshow('frame', frame)
+		if cv2.waitKey(1) & 0xFF == ord('q'):
+			break
+	video.release()
+	cv2.destroyAllWindows()
 
-def spikeglx_frames(file_path, spikeglx_cam_framenumbers, session_obj, cam):
+def spikeglx_frames(video_path, session_obj, trial_num, frame_start, frame_end, cam, thread_flag=False):
 	'''Implements OpenCV to read video file and return a list of frames'''
-	cap = cv2.VideoCapture(file_path)
+	cap = cv2.VideoCapture(video_path)
 	# Get frame count
 	frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 	# Get frame rate
@@ -49,7 +50,7 @@ def spikeglx_frames(file_path, spikeglx_cam_framenumbers, session_obj, cam):
 	frame_size = (frame_width, frame_height)
 	# Get duration
 	duration = frame_count / frame_rate
-	print('Video File Source: ', file_path)
+	print('Video File Source: ', video_path)
 	print(f'  Frame Count  : {frame_count}')
 	print(f'  Frame Rate   : {frame_rate}')
 	print(f'  Frame Size   : {frame_width} x {frame_height}')
@@ -63,23 +64,28 @@ def spikeglx_frames(file_path, spikeglx_cam_framenumbers, session_obj, cam):
 	if os.path.exists(video_folder) == False:
 		os.mkdir(video_folder)
 	print(f'  Videos saved to: {video_folder}')
-	for trial in tqdm(spikeglx_cam_framenumbers.keys()):
-		frames = []
-		video_name = session_obj.monkey + '_' + session_obj.date + '_' + str(trial) + '_' + cam + '.mp4'
-		video_path = os.path.join(video_folder, video_name)
-		# Get start and end frame numbers
-		cam_num_start = spikeglx_cam_framenumbers[trial]['start']
-		cam_num_end = spikeglx_cam_framenumbers[trial]['end']
-		print(f'Trial: {trial}')
-		print(f' Number of Frames: {cam_num_end - cam_num_start}')
-		for frame_num in range(cam_num_start, cam_num_end):
-			cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
-			success, frame = cap.read()
-			if not success:
-					break
-			# Add frame to list of frames
-			frames.append(frame)
-		make_video(frames, frame_rate, frame_size, video_path)
+	frames = []
+	video_name = session_obj.monkey + '_' + session_obj.date + '_' + str(trial_num) + '_' + cam + '.mp4'
+	video_path = os.path.join(video_folder, video_name)
+	# Delete video if it already exists
+	if os.path.exists(video_path):
+		print('	Deleting existing video file')
+		os.remove(video_path)
+	# Get start and end frame numbers
+	print(f'Trial: {trial_num}')
+	print(f' Number of Frames: {frame_end - frame_start}')
+	if thread_flag:
+		frame_range = range(frame_start, frame_end)
+	else:
+		frame_range = tqdm(range(frame_start, frame_end))
+	for frame_num in frame_range:
+		cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+		success, frame = cap.read()
+		if not success:
+				break
+		# Add frame to list of frames
+		frames.append(frame)
+	make_video(frames, frame_rate, frame_size, video_path)
 	cap.release()
 	cv2.destroyAllWindows()
 	return frames, frame_size
@@ -343,3 +349,71 @@ def video_parsing_external(df, session_obj, trial_specified=None):
 				break
 		if v_index > 5:
 				break
+
+
+
+def parse_wm_video(spikeglx_obj, session_obj, trial_num, epoch_start='start', epoch_end='end', thread_flag=False):
+	"""
+	Takes in spikeglx_obj and parses videos for a given trial
+	
+	Parameters
+	----------
+	spikeglx_obj : SpikeGLX
+		SpikeGLX object
+	trial_num : int
+		Trial number
+	epoch_start : str
+		Start epoch name ('start' | 'Fixation On')
+	epoch_end : str
+		End epoch name ('end' | 'Outcome Start')
+
+	Returns
+	-------
+	None
+	
+	"""
+	print(spikeglx_obj.cam_framenumbers[0])
+	sglx_cam_framenumbers = spikeglx_obj.cam_framenumbers
+	video_file_paths = spikeglx_obj.video_file_paths
+	video_info = spikeglx_obj.video_info
+	for cam in video_file_paths.keys():
+		frame_start = sglx_cam_framenumbers[trial_num][epoch_start]
+		frame_end = sglx_cam_framenumbers[trial_num][epoch_end]
+		video_path = None
+		for video in video_file_paths[cam]:
+			video_name = video.split('/')[-1]
+			if video_info[cam][video_name]['index_start'] <= frame_start and \
+					video_info[cam][video_name]['index_end'] >= frame_end:
+					video_path = video
+					spikeglx_frames(video_path, session_obj, trial_num, frame_start, frame_end, cam, thread_flag)
+		if video_path == None and not np.isnan(frame_start) and not np.isnan(frame_end):
+			print('Video not found for trial {}'.format(trial_num))
+			print('  Frame Start: {}'.format(frame_start))
+			print('  Frame End: {}'.format(frame_end))
+
+def parse_wm_videos(spikeglx_obj, 
+										session_obj,
+										trial_start=0, 
+										trial_end=100,
+										epoch_start='start', 
+										epoch_end='end',
+										thread_flag=False):
+	"""Takes in spikeglx_obj and parses videos for a given trial range"""
+	# get frames
+	video_file_paths = spikeglx_obj.video_file_paths
+	video_info = spikeglx_obj.video_info
+	trial_subset = list(range(trial_start, trial_end+1))
+	print('Parsing Trials for Videos: {} - {}'.format(trial_start, trial_end))
+	sglx_cam_framenumbers_subset = {k: spikeglx_obj.cam_framenumbers[k] for k in trial_subset}
+	# threading for faster parsing
+	if thread_flag:
+		threads = []
+		for trial_num in sglx_cam_framenumbers_subset.keys():
+			t = Thread(target=parse_wm_video, args=(spikeglx_obj, trial_num, epoch_start, epoch_end))
+			threads.append(t)
+			t.start()
+		for t in threads:
+			t.join()
+	else:
+		for trial_num in sglx_cam_framenumbers_subset.keys():
+			parse_wm_video(spikeglx_obj, session_obj, trial_num, epoch_start, epoch_end)
