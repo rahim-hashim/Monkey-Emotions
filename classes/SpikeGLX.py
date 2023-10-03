@@ -3,6 +3,8 @@ import os
 import sys
 import cv2
 import math
+import dill
+import pickle
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -18,7 +20,6 @@ from classes.Session import Session
 pd.options.mode.chained_assignment = None  # default='warn'
 pd.set_option('display.max_columns', None)
 
-
 def create_float_defaultdict():
   '''Pickling error workaround'''
   return defaultdict(float)
@@ -26,8 +27,9 @@ def create_float_defaultdict():
 class SpikeGLX:
   from spike_glx import read_SGLX
   def __init__(self, 
-               path_obj: SessionPath = None, 
-               session_obj: Session = None, 
+               sglx_path = None, 
+               monkey_name: str = None,
+               date: str = None,
                video_path: str = None, 
                signal_dict: dict = None):
     
@@ -36,11 +38,14 @@ class SpikeGLX:
 
     Parameters
     ----------
-    path_obj : SessionPath
-      SessionPath object
+    sglx_path : str
+      path to raw data folder with SpikeGLX .meta and .bin files
 
-    session_obj : Session
-      session object
+    monkey_name : str
+      name of monkey
+
+    date : str
+      date of session in format YYMMDD
 
     video_path : str
       path to video folder
@@ -51,6 +56,9 @@ class SpikeGLX:
 
     # Initialize variables
     self.sample_rate = -1
+    self.monkey_name = monkey_name
+    self.date = date
+    self.sglx_file_path = sglx_path
     self.cam_sync = np.array([])
     self.cam_save = np.array([])
     self.cam_frames = np.array([])
@@ -65,13 +73,14 @@ class SpikeGLX:
     if video_path is not None:
       self._get_whitematter_video_paths(video_path)
       self._check_video_paths()
-    if path_obj is not None and session_obj is not None:
-      self._find_SGLX(path_obj, session_obj)
+    if sglx_path is not None and monkey_name is not None and date is not None:
+      self._find_SGLX()
     if self.bin_file_path is not None:
       self._load_spikeglx(signal_dict)
     if self.meta is not None and self.chan_dict is not None and signal_dict is not None:
       self._parse_meta_bin(signal_dict)
       self._find_spikeglx_cam_frames()
+      self._cam_save_goes_high()
 
   def _get_whitematter_video_paths(self, video_path):
     video_folders = os.listdir(video_path)
@@ -108,12 +117,12 @@ class SpikeGLX:
         
       print('  Total Frames: {}'.format(num_frames))
 
-  def _find_SGLX(self, path_obj, session_obj):
-    print(f'Looking for binary file in {path_obj.raw_data_path}')
-    monkey_name = session_obj.monkey.lower()
-    date = '20' + session_obj.date
+  def _find_SGLX(self):
+    print(f'Looking for binary file in {self.sglx_file_path}')
+    monkey_name = self.monkey_name.lower()
+    date = '20' + self.date
     # find all folders in raw data path folder with <monkey_name>_date_g<any_int> format
-    for folder in os.listdir(path_obj.raw_data_path):
+    for folder in os.listdir(self.sglx_file_path):
       if re.match(monkey_name + '_' + date + '_g\d+', folder):
         spikeglx_folder = folder
         break
@@ -121,14 +130,14 @@ class SpikeGLX:
     spikeglx_meta = None
     print(f'Found folder: {spikeglx_folder}')
     # find .bin file
-    for file in os.listdir(os.path.join(path_obj.raw_data_path, spikeglx_folder)):
+    for file in os.listdir(os.path.join(self.sglx_file_path, spikeglx_folder)):
       if file.endswith('.bin'):
         spikeglx_bin = file
         print(f'  Found binary file: {spikeglx_bin}')
       if file.endswith('.meta'):
         spikeglx_meta = file
         print(f'  Found metadata file: {spikeglx_meta}')
-    bin_file_path = os.path.join(path_obj.raw_data_path, spikeglx_folder, spikeglx_bin)
+    bin_file_path = os.path.join(self.sglx_file_path, spikeglx_folder, spikeglx_bin)
     self.bin_file_path = Path(bin_file_path)
   
   def _load_spikeglx(self, signal_dict=None):
@@ -181,3 +190,41 @@ class SpikeGLX:
     cam_frames*=1000
     print('Number of frames in SpikeGLX Cam TTL: {}'.format(len(cam_frames)))
     self.cam_frames = cam_frames
+
+  def _cam_save_goes_high(spikeglx_obj):
+    """Plots when cam_save signal goes high and low"""
+    sample_rate = spikeglx_obj.sample_rate
+    cam_save = spikeglx_obj.cam_save
+    
+    cam_save_oneback = np.roll(cam_save, 1)
+    cam_save_threshold = np.where(cam_save > 3000)[0]
+    cam_save_oneback_threshold = np.where(cam_save_oneback < 3000)[0]
+    cam_save_overlap = np.intersect1d(cam_save_threshold, cam_save_oneback_threshold)
+    f, axarr = plt.subplots(2, 1, figsize=(20, 5))
+    buffer = 20
+    x_axis = np.arange(cam_save_overlap[0]-buffer, cam_save_overlap[0]+buffer)/sample_rate*1000
+    axarr[0].plot(x_axis,
+            cam_save[cam_save_overlap[0]-buffer:cam_save_overlap[0]+buffer])
+    axarr[0].set_title('SpikeGLX - Camera Save Signal Goes High')
+    axarr[0].set_xlabel('Time (ms)')
+    axarr[0].set_ylabel('Voltage (mV)')
+    cam_save_threshold = np.where(cam_save < 3000)[0]
+    cam_save_oneback_threshold = np.where(cam_save_oneback > 3000)[0]
+    cam_save_overlap = np.intersect1d(cam_save_threshold, cam_save_oneback_threshold)
+    x_axis = np.arange(cam_save_overlap[0]-buffer, cam_save_overlap[0]+buffer)/sample_rate*1000
+    axarr[1].plot(x_axis,
+            cam_save[cam_save_overlap[0]-buffer:cam_save_overlap[0]+buffer])
+    axarr[1].set_title('SpikeGLX - Camera Save Signal Goes Low')
+    axarr[1].set_ylabel('Voltage (mV)')
+    axarr[1].set_xlabel('Time (ms)')
+    plt.tight_layout()
+    plt.show()
+
+  def save_obj(self):
+    """Saves SpikeGLX object as pickle file"""
+    with open(f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl', 'wb') as f:
+      # get info on size of pickle file
+      print('Pickle file size: {} MB'.format(sys.getsizeof(dill.dumps(self))/1000000))
+      # dump pickle file
+      dill.dump(self, f)
+      print('Pickle file saved: spikeglx_obj_{}_{}.pkl'.format(self.monkey_name, self.date))

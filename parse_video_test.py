@@ -1,5 +1,6 @@
 import os
 import sys
+import dill
 import pickle
 import numpy as np
 import pandas as pd
@@ -11,19 +12,20 @@ from collections import defaultdict
 from classes.Session_Path import SessionPath
 from classes.Session import Session
 from classes.SpikeGLX import SpikeGLX, create_float_defaultdict
+# Custom modules
+from config import preprocess_helper
+from utilities.save_functions import unpickle_spikeglx
+from video.wm_videos import parse_wm_videos
+
 # pandas options
 pd.options.mode.chained_assignment = None  # default='warn'
 pd.set_option('display.max_columns', None)
 
-# See tree branch above to set <ROOT>, <EXPERIMENT>
 ROOT = '/Users/rahimhashim/Google Drive/My Drive/Columbia/Salzman/Monkey-Training/'
 EXPERIMENT = 'rhAirpuff'
 TASK = 'Probabilistic_Reward_Airpuff_Choice' # Probabalistic_Airpuff_4x2 | Probabilistic_Reward_Airpuff_5x2 | Probabilistic_Reward_Airpuff_Choice
 
 path_obj = SessionPath(ROOT, EXPERIMENT, TASK)
-
-# Custom modules
-from config import preprocess_helper
 
 # Specifying date/monkey/task
 start_date = '2023-09-28' #@param {type:"date"}
@@ -44,15 +46,7 @@ session_df, session_obj, error_dict, behavioral_code_dict\
 																			save_df,
 																			combine_dates)
 
-session_df_correct = session_df[session_df['correct'] == 1]
-
-# unpickle spikeglx_obj
-print(os.getcwd())
-with open('spikeglx_obj.pkl', 'rb') as f:
-  spikeglx_obj = pickle.load(f)
-
-from video.video_parsing_external import parse_wm_videos
-
+spikeglx_obj = unpickle_spikeglx(session_obj)
 
 kwargs = {'spikeglx_obj': spikeglx_obj, 
           'session_obj': session_obj, 
@@ -60,6 +54,6 @@ kwargs = {'spikeglx_obj': spikeglx_obj,
           'trial_end': len(session_obj.df),
           'epoch_start': 'Trace Start', 
           'epoch_end': 'Outcome Start', 
-          'thread_flag': False}
+          'thread_flag': True}
 
 parse_wm_videos(**kwargs)

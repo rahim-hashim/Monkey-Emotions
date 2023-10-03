@@ -56,3 +56,24 @@ def lick_blink_linear(df, session_obj):
 	f.savefig(img_save_path, dpi=150, bbox_inches='tight', transparent=True)
 	print('  {}.png saved.'.format(fig_name))
 	plt.close('all')
+
+def trialno_lick_blink_correlation(df, session_obj):
+  f, ax = plt.subplots(1, 1, figsize=(5, 5))
+  df_threshold = df[df['fractal_count_in_block'] > 10]
+  for block in df_threshold['condition'].unique():
+    df_block = df_threshold[df_threshold['condition'] == block]
+    print(f'Block: {block}')
+    for valence in sorted(df_block['valence'].unique(), reverse=True):
+      df_block_valence = df_block[df_block['valence'] == valence]
+      trialno_lick_corr = round(df_block_valence['fractal_count_in_block'].corr(df_block_valence['lick_duration']), 3)
+      trial_no_blink_corr = round(df_block_valence['fractal_count_in_block'].corr(df_block_valence['blink_duration_window']), 3)
+      print(f'  Valence {valence}: Lick Correlation: {trialno_lick_corr} | Blink Correlation: {trial_no_blink_corr}')
+      ec = 'black' if block == 1 else 'white'
+      ax.scatter(trialno_lick_corr, trial_no_blink_corr, s=150,
+                label=None, 
+                color=session_obj.valence_colors[valence], ec=ec)
+      ax.set_xlabel('Trial Number vs. Lick Duration Correlation', fontsize=14)
+      ax.set_ylabel('Trial Number vs. Blink Duration Correlation', fontsize=14)
+  ax.set_xlim(-0.5, 0.5)
+  ax.set_ylim(-0.5, 0.5)
+  plt.show()

@@ -23,8 +23,9 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 	from analyses.duration_hist import epoch_hist
 	epoch_hist(df, session_obj)
 
-	# from analyses.lick_blink_relationship import lick_blink_linear
-	# lick_blink_linear(df, session_obj)
+	from analyses.lick_blink_relationship import lick_blink_linear, trialno_lick_blink_correlation
+	lick_blink_linear(df, session_obj)
+	trialno_lick_blink_correlation(df, session_obj)
 
 	# from analyses.session_timing import plot_session_timing
 	# plot_session_timing(df, session_obj)
