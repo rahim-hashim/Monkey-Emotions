@@ -153,8 +153,12 @@ cython_debug/
 *.png
 *.mp4
 *.prproj
-video/Bear_230823/.DS_Store
-video/Bear_230823/trial_1/.DS_Store
-video/Bear_230823/trial_1/.DS_Store
-video/Bear_230823/trial_2/.DS_Store
+video/Bear_*/
+Video/Aragorn_*/
+/[0-9]*/
 *.pkl
+*.pickle
+*.csv
+*.h5
+*.pbtxt
+*.meta

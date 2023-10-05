@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 from collections import defaultdict
 from scipy.interpolate import make_interp_spline, BSpline
 

@@ -49,7 +49,7 @@ def generate_ml_behavior_frames(session_df, session_obj, trial_num):
 def generate_ml_behavior_videos(session_df, session_obj, trial_num):
 
 	print('Generating video for trial {}'.format(trial_num))
-	generate_ml_behavior_frames(session_df, session_obj, trial_num)
+	# generate_ml_behavior_frames(session_df, session_obj, trial_num)
 
 	monkey_name = session_obj.monkey
 	date = session_obj.date
@@ -57,24 +57,29 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num):
 	target_folder_path = os.path.join(os.getcwd(), 'video', session_name)
 	source_folder_path = os.path.join(os.getcwd(), 'video', session_name, f'trial_{trial_num}')
 	# Define video output settings
-	frame_width = 500
+	frame_width = 600
 	frame_height = 500
 	for beh_measure in ['eye', 'lick']:
 		target_video_path = os.path.join(target_folder_path, beh_measure+"_%04d.mp4" % trial_num)
-		print('Saving video to: {}'.format(target_video_path))
 		# delete video if it already exists
 		if os.path.exists(target_video_path):
 			print('Deleting existing video: {}'.format(target_video_path))
 			os.remove(target_video_path)
-		fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
-		video = cv2.VideoWriter(target_video_path, fourcc, 1000, (frame_width,frame_height))
-		# Combine frames into a video, using tqdm
-		video_files = sorted([x for x in os.listdir(source_folder_path) if beh_measure in x])
-		for image in tqdm(video_files, desc=f'Trial {trial_num}: {beh_measure}'):
-			# write the frames
-			img_file_path = os.path.join(source_folder_path, image)
-			video.write(cv2.imread(img_file_path))
-			# Delete frames after they are added to the video
-			# os.remove(os.path.join(fig_folder_path, image))
-		cv2.destroyAllWindows()
-		video.release()
+		print('Saving video to: {}'.format(target_video_path))
+		# Define the codec and create VideoWriter object
+		fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+		out = cv2.VideoWriter(target_video_path, fourcc, 1000, (frame_width, frame_height))
+		# Iterate through all the files in the folder
+		video_files = sorted(os.listdir(source_folder_path))
+		video_files_beh = [file for file in video_files if file.startswith(beh_measure)]
+		for filename in tqdm(video_files_beh, desc=f'Trial {trial_num} {beh_measure}'):
+			# print('  {}'.format(filename))
+			# reading each file
+			img = cv2.imread(os.path.join(source_folder_path, filename))
+			# setting the width, height of the frame
+			img = cv2.resize(img, (frame_width, frame_height))
+			# writing the extracted images
+			out.write(img)
+	# delete image folder
+	print('Deleting image folder: {}'.format(source_folder_path))
+	os.rmdir(source_folder_path)
