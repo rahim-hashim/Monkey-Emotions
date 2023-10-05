@@ -78,4 +78,4 @@ config_path_dict, train_config_path_dict = \
   dlc_config.dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict)
 
 # Run DLC
-dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, videotype='mp4')
+dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, start_video=0, end_video=10, videotype='mp4')

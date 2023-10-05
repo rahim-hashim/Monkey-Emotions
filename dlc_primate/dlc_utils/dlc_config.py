@@ -148,12 +148,12 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 
 	return config_path_dict, train_config_path_dict
 
-def dlc_run(config_path_dict, dlc_video_path_dict, videotype='mp4'):
+def dlc_run(config_path_dict, dlc_video_path_dict, start_video=0, end_video=10, videotype='mp4'):
 
-  for key in dlc_video_path_dict.keys():
-    video_path_list = dlc_video_path_dict[key]
-    video_list_subset = video_path_list[:]
-    config_path = config_path_dict[key]
+  for cam in dlc_video_path_dict.keys():
+    video_path_list = sorted(dlc_video_path_dict[cam], key=lambda x: int(re.findall(r'(\d+)_{0}'.format(cam), x)[0]))
+    video_list_subset = video_path_list[start_video:end_video]
+    config_path = config_path_dict[cam]
     
 		# Adding new videos to the config.yaml file
     deeplabcut.add_new_videos(

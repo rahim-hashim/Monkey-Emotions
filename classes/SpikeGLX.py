@@ -25,7 +25,6 @@ def create_float_defaultdict():
   return defaultdict(float)
 
 class SpikeGLX:
-  from spike_glx import read_SGLX
   def __init__(self, 
                sglx_path = None, 
                monkey_name: str = None,
@@ -70,9 +69,6 @@ class SpikeGLX:
     self.trial_times = defaultdict(create_float_defaultdict)
     self.cam_framenumbers = defaultdict(create_float_defaultdict)
 
-    if video_path is not None:
-      self._get_whitematter_video_paths(video_path)
-      self._check_video_paths()
     if sglx_path is not None and monkey_name is not None and date is not None:
       self._find_SGLX()
     if self.bin_file_path is not None:
@@ -81,6 +77,9 @@ class SpikeGLX:
       self._parse_meta_bin(signal_dict)
       self._find_spikeglx_cam_frames()
       self._cam_save_goes_high()
+    if video_path is not None:
+      self._get_whitematter_video_paths(video_path)
+      self._check_video_paths()
 
   def _get_whitematter_video_paths(self, video_path):
     video_folders = os.listdir(video_path)
@@ -222,9 +221,11 @@ class SpikeGLX:
 
   def save_obj(self):
     """Saves SpikeGLX object as pickle file"""
-    with open(f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl', 'wb') as f:
+    pkl_path = os.path.join(os.getcwd(), f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl')
+    with open(pkl_path, 'wb') as f:
       # get info on size of pickle file
       print('Pickle file size: {} MB'.format(sys.getsizeof(dill.dumps(self))/1000000))
       # dump pickle file
       dill.dump(self, f)
-      print('Pickle file saved: spikeglx_obj_{}_{}.pkl'.format(self.monkey_name, self.date))
+      print('Pickle file saved: {}'.format(pkl_path))
+      self.pkl_path = pkl_path
