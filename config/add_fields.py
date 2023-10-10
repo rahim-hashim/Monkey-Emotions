@@ -477,7 +477,9 @@ def add_fields(df, session_obj, behavioral_code_dict):
 	# only when White Matter camera connected
 	try:
 		df['cam_frames'] = df.apply(cam_frame_counter, axis=1)
+		print('	[\'cam_frames\'] field added.')
 	except:
+		print('	failed to add [\'cam_frames\'] field.')
 		pass
 
 	print('  {} new fields added.'.format(20))

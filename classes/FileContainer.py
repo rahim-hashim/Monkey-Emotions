@@ -6,7 +6,7 @@ from itertools import combinations
 from tkinter.filedialog import askdirectory, askopenfilename
 # Custom modules
 from utilities.mat_import import loadmat
-from config.h5_helper import h5_load, h5_parse
+from config.h5_helper import h5_load, h5_parse, add_fields
 from config.session_parse_helper import session_parser
 # Custom classes
 from classes.Session import Session
@@ -32,7 +32,7 @@ class FileContainer:
 			root = ROOT_DIR
 
 		# load behavior file
-		print('Select behavior file')
+		print('Select .bhv2/.h5 behavior file (i.e. 230927_Aragorn_choice.h5)')
 		beh_file_path = askopenfilename(title='Select .bhv2 or .h5 behavior file', 
 																		filetypes=[('bhv2 files', '.bhv2'),
 																							('.h5 files', '.h5')],
@@ -47,7 +47,7 @@ class FileContainer:
 		print('  MonkeyLogic Monkey: {}'.format(ml_monkey_name))
 		
 		# load video files
-		print('Select directory containing White Matter video files')
+		print('Select directory containing White Matter video files (i.e. 230927_Aragorn)')
 		video_dir_path = askdirectory(title='Select directory containing White Matter video files', 
 																	initialdir=root)
 		video_file_list = os.listdir(video_dir_path)
@@ -67,7 +67,7 @@ class FileContainer:
 		sglx_file_list = os.listdir(sglx_dir_path)
 		print('SpikeGLX files directory selected: {}'.format(sglx_dir_path))
 		sglx_dir_name = os.path.basename(sglx_dir_path)
-		sglx_date = sglx_dir_name.split('_')[1]
+		sglx_date = sglx_dir_name.split('_')[1][2:]
 		self.date['sglx'] = sglx_date
 		print('  SpikeGLX Date: {}'.format(sglx_date))
 		sglx_monkey_name = sglx_dir_name.split('_')[0].lower()
@@ -105,4 +105,8 @@ class FileContainer:
         session_parser(h5_py_file, trial_list, trial_record, self.date['ml'], self.monkey_name['ml'])
 			session_df = pd.DataFrame.from_dict(session_dict)
 			session_obj = Session(session_df, self.monkey_name['ml'], 'rhAirpuff', behavioral_code_dict)
+			session_df, session_obj = add_fields(session_df,
+																					session_obj, 
+																					behavioral_code_dict)
+			session_obj.df = session_df
 			return session_obj, error_dict, behavioral_code_dict
