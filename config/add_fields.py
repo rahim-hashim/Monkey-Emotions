@@ -442,51 +442,103 @@ def add_fields(df, session_obj, behavioral_code_dict):
 	try:
 		df['valence'] = df.apply(valence_assignment, stim=0, axis=1)
 	except:
-		df['valence'] = df.apply(valence_assignment, stim=1, axis=1)
-		print('   No reward magnitude column found, skipping valence assignment...')
+		try:
+			df['valence'] = df.apply(valence_assignment, stim=1, axis=1)
+		except:
+			print('   No reward magnitude column found, skipping valence assignment...')
+	
 	if 'reward_mag_1' in df.columns:
-		df['valence_1'] = df.apply(valence_assignment, stim=1, axis=1)
-		df['valence_2'] = df.apply(valence_assignment, stim=2, axis=1)
-		# reindex to move 'reinforcement trial' and 'choice_trial' columns after 'condition' key
-		df['valence_not_chosen'] = df.apply(valence_not_chosen, stim=1, axis=1)
+		try:
+			df['valence_1'] = df.apply(valence_assignment, stim=1, axis=1)
+			df['valence_2'] = df.apply(valence_assignment, stim=2, axis=1)
+			# reindex to move 'reinforcement trial' and 'choice_trial' columns after 'condition' key
+			df['valence_not_chosen'] = df.apply(valence_not_chosen, stim=1, axis=1)
+		except:
+			print('   No reward magnitude column found, skipping valence assignment...')
 	df['lick_raster'] = df.apply(lick_window, lick_threshold=session_obj.lick_threshold, axis=1)
 	df['DEM_raster'] = df.apply(DEM_window, axis=1)
 	df['trial_bins'] = df.apply(trial_bins, axis=1)
 	df['trial_in_block'] = trial_in_block(df)
-	df['fractal_count_in_block'] = fractal_in_block(df)
+	try:
+		df['fractal_count_in_block'] = fractal_in_block(df)
+	except:
+		print('   No fractal column found, skipping fractal count...')
+		pass
 	# df = outcome_back_counter(df)
-	df = df.apply(outcome_count_window,
+	try:
+		df = df.apply(outcome_count_window,
 								session_obj=session_obj, 
 								axis=1)
-	df['pupil_pre_CS'] = df.apply(pupil_pre_CS, axis=1)
-	df['lick_in_window'] = df.apply(lick_in_window, axis=1)
-	df['blink_in_window'] = df.apply(blink_in_window, axis=1)
-	df['lick_duration'] = df.apply(lick_duration, 
+	except:
+		print('   No blink window column found, skipping blink window...')
+		pass
+
+	try:
+		df['pupil_pre_CS'] = df.apply(pupil_pre_CS, axis=1)
+	except:
+		print('   No pupil column found, skipping pupil pre-CS...')
+		pass
+	try:
+		df['lick_in_window'] = df.apply(lick_in_window, axis=1)
+	except:
+		print('   No lick window column found, skipping lick window...')
+		pass
+	try:
+		df['blink_in_window'] = df.apply(blink_in_window, axis=1)
+	except:
+		print('   No blink window column found, skipping blink window...')
+		pass
+	try:
+		df['lick_duration'] = df.apply(lick_duration, 
 																	trace_window=TRACE_WINDOW_LICK, 
 																	axis=1)	
-	df['blink_duration_sig'] = df.apply(blink_duration_sig, 
+	except:
+		print('   No lick duration column found, skipping lick duration...')
+		pass
+	try:
+		df['blink_duration_sig'] = df.apply(blink_duration_sig, 
 																	trace_window=TRACE_WINDOW_BLINK,
 																	blink_signal=BLINK_SIGNAL, 
 																	axis=1)
-	df['blink_duration_offscreen'] = df.apply(blink_duration_offscreen, 
+	except:
+		print('   No blink duration column found, skipping blink duration...')
+		pass
+	try:
+		df['blink_duration_offscreen'] = df.apply(blink_duration_offscreen, 
 																	trace_window=TRACE_WINDOW_BLINK, 
 																	axis=1)
-	df['eye_distance'] = df.apply(eye_distance, 
+	except:
+		print('   No blink duration column found, skipping blink duration...')
+		pass
+
+	try:
+		df['eye_distance'] = df.apply(eye_distance, 
 																session_obj=session_obj, 
 																axis=1)
+	except:
+		print('   No eye distance column found, skipping eye distance...')
+		pass
+
 	# only when White Matter camera connected
 	try:
 		df['cam_frames'] = df.apply(cam_frame_counter, axis=1)
-		print('	[\'cam_frames\'] field added.')
+		print('  [\'cam_frames\'] field added.')
 	except:
-		print('	failed to add [\'cam_frames\'] field.')
+		print('	Failed to add [\'cam_frames\'] field.')
 		pass
 
 	print('  {} new fields added.'.format(20))
+	try:
+		session_obj = prelim_behavior_analysis(df, session_obj, behavioral_code_dict)
+	except:
+		print('   No behavioral analysis performed...')
+		pass
 
-	session_obj = prelim_behavior_analysis(df, session_obj, behavioral_code_dict)
-
-	# clear rows with valence == nan
-	df = df[df['valence'].notnull()]
+	# clear rows with valence == nan	
+	try:
+		df = df[df['valence'].notnull()]
+		print('	{} rows removed due to nan valence.'.format(len(df[df['valence'].isnull()])))
+	except:
+		pass
 
 	return df, session_obj

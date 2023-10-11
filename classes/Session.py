@@ -57,13 +57,17 @@ class Session:
 		
 		# specific to each task
 		if df_flag:
-			self.parse_stim_labels()
-			self.parse_valence_labels()
-			self.generate_colors()
-			self.calculate_datetime()
-			self.find_offscreen_values()
-			self.find_outcome_parameters()
-		self.behavior_summary(behavioral_code_dict)
+			try:
+				self.parse_stim_labels()
+				self.parse_valence_labels()
+				self.generate_colors()
+				self.calculate_datetime()
+				self.find_offscreen_values()
+				self.find_outcome_parameters()
+				self.behavior_summary(behavioral_code_dict)
+			except:
+				# not rhAirpuff
+				pass
 	
 	def estimate_lick_threshold(self):
 		"""Determine the voltage threshold for a lick"""

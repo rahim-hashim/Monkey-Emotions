@@ -91,13 +91,14 @@ class FileContainer:
 				print(f'  {monkeys_combinations[index][1][0]}: {monkeys_combinations[index][1][1]}')
 		self.ml_file_path = beh_file_path
 		self.white_matter_dir_path = video_dir_path
-		self.spikeglx_dir_path = sglx_dir_path
+		# parent directory of sglx_dir_path is the sglx data directory used in pipeline
+		self.spikeglx_dir_path = os.path.dirname(sglx_dir_path)
 	
 	def ml_to_pd(self):
 		ml_beh_file = self.ml_file_path
 		# check file extension
 		if ml_beh_file.endswith('.bhv2'):
-			ml_beh = loadmat(ml_beh_file)
+			print('Convert .bhv2 to .h5: {}'.format(ml_beh_file))
 		elif ml_beh_file.endswith('.h5'):
 			h5_py_file = h5_load(ml_beh_file)
 			ml_config, trial_record, trial_list, cam1_list, cam2_list = h5_parse(h5_py_file)

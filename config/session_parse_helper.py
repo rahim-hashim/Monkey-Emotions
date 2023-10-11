@@ -215,7 +215,8 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 			for stim_num, stimulus in enumerate(stimuli_attribute):
 				session_dict = stimulus_parser(stimuli_attribute[stimulus], stim_num, session_dict)
 		except: # one stimuli in stimuli_attribute
-			session_dict = stimulus_parser(stimuli_attribute, stim_num, session_dict)
+			pass
+			# session_dict = stimulus_parser(stimuli_attribute, stim_num, session_dict)
 		if 'stim_list' in locals(): # experiment contains user-generated variable TrialRecord.User.stim_container
 			for stimulus in stim_list:
 				# exclude fix (no degree value)
