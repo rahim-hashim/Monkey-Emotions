@@ -62,7 +62,7 @@ class FileContainer:
 		
 		# load spikeglx files
 		print('Select directory containing SpikeGLX files')
-		sglx_dir_path = askdirectory(title='Select directory containing SpikeGLX files',
+		sglx_dir_path = askdirectory(title='Select directory containing SpikeGLX .bin and .meta files',
 																initialdir=root)
 		sglx_file_list = os.listdir(sglx_dir_path)
 		print('SpikeGLX files directory selected: {}'.format(sglx_dir_path))
