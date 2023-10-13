@@ -576,9 +576,10 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				time_to_samples(sglx_cam_save, sample_rate, sample_times, 
 											sglx_trial_start_approx, 
 											sglx_trial_end_approx)
+		# align on photodiode signal
 		else:
-			# add 200 ms to the end of the last trial to get the start of the next trial
 			ml_analog = ml_photodiode
+			# check -1000 ms before the end of the last trial to get the start of the next trial
 			sglx_trial_start_approx = sglx_trial_times[trial_num_specified-1]['end'] - 1000
 			sglx_trial_end_approx = sglx_trial_start_approx + len(ml_analog)
 			# capture SpikeGLX cam_save signal between approximated trial start and end times
@@ -586,32 +587,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				time_to_samples(sglx_photodiode, sample_rate, sample_times, 
 											sglx_trial_start_approx, 
 											sglx_trial_end_approx)
-		####################################################################################
-		# find first time where pd signal goes high on sglx
-		# sglx_analog_high = 0
-		# for i, x in enumerate(sglx_pd_signal_approx):
-		# 	if i == 0:
-		# 		continue
-		# 	if sglx_pd_signal_approx[i-1] < 2000 and x > 2000:
-		# 		# get data_times corresponding to save_high_ephys
-		# 		sglx_analog_high_time = sglx_pd_times_approx[i]
-		# 		break
-		# # find first time where save signal goes high on ML
-		# ml_analog = 0
-		# for i in range(1, len((ml_analog))):
-		# 	if ml_analog[i-1] < 1000 and ml_analog[i] > 1000:
-		# 		ml_analog = i
-		# 		break
 
-		# sglx_analog_high = 0
-		# for i, x in enumerate(sglx_pd_signal_approx):
-		# 	if i == 0:
-		# 		continue
-		# 	if sglx_pd_signal_approx[i-1] < 2000 and x > 2000:
-		# 		# get data_times corresponding to save_high_ephys
-		# 		sglx_analog_high_time = sglx_pd_times_approx[i]
-		# 		break
-		####################################################################################
+		# find first time where analog signal goes high on SpikeGLX
 		sglx_analog_high_time = 0
 		for i, x in enumerate(sglx_analog_approx):
 			if i == 0:
@@ -620,7 +597,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				# get data_times corresponding to save_high_ephys
 				sglx_analog_high_time = sglx_analog_times_approx[i]
 				break
-		# find first time where save signal goes high on ML
+		# find first time where analog signal goes high on ML
 		ml_analog_high = 0
 		for i in range(1, len((ml_analog))):
 			if ml_analog[i-1] < 1000 and ml_analog[i] > 1000:
@@ -680,8 +657,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 																													col_start='Trace Start', col_end='Outcome Start')
 	
 		# plot trial if correlation between ML and SGLX photodiode signal is low
-		if low_corr_flag:
-			plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
+		# if low_corr_flag:
+		plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
 								sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 
 	
