@@ -400,6 +400,7 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 				pass
 			else:
 				print('Video not found for trial {} although frame epochs found'.format(trial_num))
+				print('  Cam: {} | Video {}'.format(cam, os.path.basename(video_path)))
 				print('  Frame Start: {}'.format(frame_start))
 				print('  Frame End: {}'.format(frame_end))
 		elif video_found_flag == False:

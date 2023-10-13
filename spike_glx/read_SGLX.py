@@ -636,6 +636,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
 				# print(f'  Trial {trial_num_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
 				if corr > 0.95:
+					print(f'  Trial {trial_num_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
 					low_corr_flag = False
 				# stop at a full 10 second shift
 				elif start_shift > 5000:
@@ -657,8 +658,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 																													col_start='Trace Start', col_end='Outcome Start')
 	
 		# plot trial if correlation between ML and SGLX photodiode signal is low
-		# if low_corr_flag:
-		plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
+		if low_corr_flag:
+			plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
 								sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 
 	
@@ -666,6 +667,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	plot_spikeglx_ml_corr(correlation_matrix, corr_row_len)
 	spikeglx_obj.trial_times = sglx_trial_times
 	spikeglx_obj.cam_framenumbers = sglx_cam_framenumbers
+	spikeglx_obj.ml_sglx_corr_matrix = correlation_matrix
 
 	return spikeglx_obj
 
