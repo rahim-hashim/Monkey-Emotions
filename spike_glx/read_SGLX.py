@@ -5,6 +5,7 @@
 
 import os
 import re
+import sys
 import math
 import dill
 import numpy as np
@@ -428,7 +429,8 @@ def plot_pd_alignment(trial_specified, sglx_pd_times, sglx_pd_signal,
 											sglx_trial_times, sglx_cam_framenumbers, 
 											offset, epochs):
 	"""Plots MonkeyLogic and SpikeGLX photodiode signal for a given trial"""	
-	trial_num = trial_specified['trial_num'] - 1
+	trial_index = trial_specified['trial_num'] - 1
+	trial_num = trial_specified['trial_num']
 	# find the first and last frame of the camera from ML
 	ml_cam_start = trial_specified['cam_frames'][0]
 	ml_cam_end = trial_specified['cam_frames'][-1]
@@ -436,7 +438,7 @@ def plot_pd_alignment(trial_specified, sglx_pd_times, sglx_pd_signal,
 	ml_analog = trial_specified['photodiode']*1000
 
 	f, ax = plt.subplots(1, 1, figsize=(20, 3))
-	if trial_num == 0:
+	if trial_index == 0:
 		ax.plot(np.array(ml_analog), label='ML (raw)', color='blue') # x-axis mV to V
 		ax.text(0, max(ml_analog)+300, 'SpikeGLX Start', ha='center', color='r')
 		ax.axvline(x=0, color='r', linestyle='--')
@@ -458,10 +460,10 @@ def plot_pd_alignment(trial_specified, sglx_pd_times, sglx_pd_signal,
 				ax.text(epoch_time, max(ml_analog)+300, epoch, ha='center', color='grey')
 		except:
 			pass
-	spikeglx_num_frames = sglx_cam_framenumbers[trial_num]['end'] - sglx_cam_framenumbers[trial_num]['start'] + 1
+	spikeglx_num_frames = sglx_cam_framenumbers[trial_index]['end'] - sglx_cam_framenumbers[trial_index]['start'] + 1
 	plt.xlabel('SpikeGLX Time (ms)')
 	plt.ylabel('Voltage (mV)')
-	plt.suptitle(f'Trial {trial_num} Photodiode Signal', fontsize=18, y=1.1)
+	plt.suptitle(f'Trial Number {trial_num} | Photodiode Signal', fontsize=18, y=1.1)
 	plt.title(f'Offset: {round(offset)} ms', fontsize=14, y=1.2)
 	plt.subplots_adjust(top=0.8)
 	# legend outside of plot
@@ -474,11 +476,11 @@ def plot_pd_alignment(trial_specified, sglx_pd_times, sglx_pd_signal,
 	print('  ML Cam End             |  {:<7}'.format(ml_cam_end))
 	print('  ML Cam Num Frames      |  {:<7}'.format(ml_num_frames))
 	print('  --------------------------------------')
-	print('  SpikeGLX Trial Start   |  {:<7}'.format(round(sglx_trial_times[trial_num]['start'], 2)))
-	print('  SpikeGLX Trial End     |  {:<7}'.format(round(sglx_trial_times[trial_num]['end'], 2)))
+	print('  SpikeGLX Trial Start   |  {:<7}'.format(round(sglx_trial_times[trial_index]['start'], 2)))
+	print('  SpikeGLX Trial End     |  {:<7}'.format(round(sglx_trial_times[trial_index]['end'], 2)))
 	print('  SpikeGLX Num Frames    |  {:<7}'.format(spikeglx_num_frames))
 
-def correlation_matrix(ml_analog, ml_photodiode, sglx_pd_signal_exact, sglx_photodiode, sample_rate, sample_times, ):
+def shift_correlation_test(ml_analog, ml_photodiode, sglx_pd_signal_exact, sglx_photodiode, sample_rate, sample_times, ):
 
 	sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
 															for i in range(len(ml_analog))]
@@ -549,6 +551,9 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	sglx_cam_framenumbers = spikeglx_obj.cam_framenumbers
 	sglx_photodiode = spikeglx_obj.photodiode
 	sglx_cam_save = spikeglx_obj.cam_save
+	pre_trial_shift = 0
+	if spikeglx_obj.monkey_name == 'gandalf':
+		pre_trial_shift = -1000 # approximate trial start 1000 ms before trial end of previous trial for extra buffer
 
 	# initialize correlation matrix
 	corr_row_len = 100
@@ -579,8 +584,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		# align on photodiode signal
 		else:
 			ml_analog = ml_photodiode
-			# check -1000 ms before the end of the last trial to get the start of the next trial
-			sglx_trial_start_approx = sglx_trial_times[trial_num_specified-1]['end'] - 1000
+			# check -1000 ms before the end of the last trial to get the start of the next trial ONLY FOR GANDALF
+			sglx_trial_start_approx = sglx_trial_times[trial_num_specified-1]['end'] + pre_trial_shift
 			sglx_trial_end_approx = sglx_trial_start_approx + len(ml_analog)
 			# capture SpikeGLX cam_save signal between approximated trial start and end times
 			sglx_analog_approx, sglx_analog_times_approx = \
@@ -617,13 +622,14 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 
 		# calculate correlations between ML and SGLX photodiode signals
 		corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
-		start_shift = 0
-		# confidence is high that everything is aligned appropriately
 		if corr > 0.95:
 			low_corr_flag = False
-		else:
+
+		############################################################################################
+		# Correlation test with shifting sglx start times to find the best start index
+		elif spikeglx_obj.monkey_name == 'gandalf':
 			# shift sglx trial start and end times by 1 ms and try again
-			low_corr_flag = True
+			max_corr = [0, 0] # [shift, corr]
 			while low_corr_flag == True:
 				start_shift += 1
 				sglx_trial_start += 1
@@ -634,40 +640,56 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
 																		for i in range(len(ml_analog))]
 				corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
+				if corr > max_corr[1]:
+					max_corr[0] = start_shift
+					max_corr[1] = corr
 				# print(f'  Trial {trial_num_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
-				if corr > 0.95:
-					print(f'  Trial {trial_num_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
+				if corr > 0.975:
 					low_corr_flag = False
 				# stop at a full 10 second shift
-				elif start_shift > 5000:
-					print(' Correlation never corrected. Check alignment.')
+				elif start_shift > 10000:
+					print(f'Trial {trial_num_specified} correlation never corrected. Check alignment.')
+					print(f'	Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
 					break
-		
+		if trial_num_specified >= 55:
+			print(f'Trial {trial_num_specified} Signal High | ML: {ml_analog_high} | SGLX: {sglx_analog_high_time}')
+			print(f'  SGLX Approx Start: {sglx_trial_start_approx} | SGLX Approx End: {sglx_trial_end_approx}')
+			print(f'  SGLX Exact Start: {sglx_trial_start} | SGLX Exact End: {sglx_trial_end}')
+		low_corr_flag = True # DELETE
+		print(f'Trial {trial_num_specified} Shift {start_shift - pre_trial_shift} | ML-SGLX Correlation: {round(corr, 3)}')
+		############################################################################################
+
 		# add trial start and end times to dictionary
 		sglx_trial_times[trial_num_specified]['start'] = sglx_trial_start
 		sglx_trial_times[trial_num_specified]['end'] =  sglx_trial_end
+		sglx_cam_framenumbers = spikeglx_cam_frames_window(spikeglx_obj, trial_num_specified, sglx_trial_times, sglx_cam_framenumbers, 
+																											 col_start='start', col_end='end')
+		
 		# add epoch times to dictionary
 		for e_index, epoch in enumerate(epochs):
 			sglx_trial_times[trial_num_specified][epoch] = sglx_trial_start + trial_specified[epoch]
-			correlation_matrix[trial_num_specified//corr_row_len, trial_num_specified%corr_row_len] = corr
-
-		# find the camera frames between the start and end of the trial
-		sglx_cam_framenumbers = spikeglx_cam_frames_window(spikeglx_obj, trial_num_specified, sglx_trial_times, sglx_cam_framenumbers, 
-																													col_start='start', col_end='end')
-		sglx_cam_framenumbers = spikeglx_cam_frames_window(spikeglx_obj, trial_num_specified, sglx_trial_times, sglx_cam_framenumbers, 
-																													col_start='Trace Start', col_end='Outcome Start')
+			if e_index < len(epochs)-1:
+				sglx_cam_framenumbers = spikeglx_cam_frames_window(spikeglx_obj, trial_num_specified, sglx_trial_times, sglx_cam_framenumbers, 
+																											 col_start=epochs[e_index-1], col_end=epoch)
+		
+		# add correlation value to correlation matrix
+		correlation_matrix[trial_num_specified//corr_row_len, trial_num_specified%corr_row_len] = corr
 	
 		# plot trial if correlation between ML and SGLX photodiode signal is low
 		if low_corr_flag:
-			plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
-								sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
+			# plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
+			# 					sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
+				plot_pd_alignment(trial_specified, sglx_analog_times_approx, sglx_analog_approx,
+			 					sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
+				print(f'  ML-SGLX Correlation: {round(corr, 3)}')
 
 	
 	# plot correlation matrix
 	plot_spikeglx_ml_corr(correlation_matrix, corr_row_len)
 	spikeglx_obj.trial_times = sglx_trial_times
 	spikeglx_obj.cam_framenumbers = sglx_cam_framenumbers
-	spikeglx_obj.ml_sglx_corr_matrix = correlation_matrix
+	# flatten correlation matrix
+	spikeglx_obj.ml_sglx_corr_matrix = correlation_matrix.flatten()
 
 	return spikeglx_obj
 

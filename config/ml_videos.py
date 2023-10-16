@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 from classes.Session import Session
 
 # base case, working
-def generate_ml_behavior_frames(session_df, session_obj, trial_num):
+def generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start, epoch_end):
 	monkey_name = session_obj.monkey
 	date = session_obj.date
 	session_name = f'{monkey_name}_{date}'
 	trial_specified = session_df[session_df['trial_num'] == trial_num]
-	epoch_start = trial_specified['Trace Start'].tolist()[0]
-	epoch_end = trial_specified['Outcome Start'].tolist()[0]
+	epoch_start = trial_specified[epoch_start].tolist()[0]
+	epoch_end = trial_specified[epoch_end].tolist()[0]
 	eye_x = trial_specified['eye_x'].tolist()[0][epoch_start:epoch_end]
 	eye_y = trial_specified['eye_y'].tolist()[0][epoch_start:epoch_end]
 	lick = trial_specified['lick'].tolist()[0][epoch_start:epoch_end]
@@ -46,10 +46,10 @@ def generate_ml_behavior_frames(session_df, session_obj, trial_num):
 		plt.savefig(os.path.join(fig_folder_path, "lick_%04d.png" % i), dpi=150)
 		plt.close()
 
-def generate_ml_behavior_videos(session_df, session_obj, trial_num):
+def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start, epoch_end):
 
 	print('Generating video for trial {}'.format(trial_num))
-	# generate_ml_behavior_frames(session_df, session_obj, trial_num)
+	generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start, epoch_end)
 
 	monkey_name = session_obj.monkey
 	date = session_obj.date
@@ -59,8 +59,9 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num):
 	# Define video output settings
 	frame_width = 600
 	frame_height = 500
+	trial_num_str = trial_num-1
 	for beh_measure in ['eye', 'lick']:
-		target_video_path = os.path.join(target_folder_path, beh_measure+"_%04d.mp4" % trial_num)
+		target_video_path = os.path.join(target_folder_path, beh_measure+"_%04d.mp4" % trial_num_str)
 		# delete video if it already exists
 		if os.path.exists(target_video_path):
 			print('Deleting existing video: {}'.format(target_video_path))
@@ -82,4 +83,4 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num):
 			out.write(img)
 	# delete image folder
 	print('Deleting image folder: {}'.format(source_folder_path))
-	os.rmdir(source_folder_path)
+	os.rmdir(source_folder_path, recursive=True)

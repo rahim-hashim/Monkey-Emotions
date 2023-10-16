@@ -372,21 +372,26 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 	None
 	
 	"""
+
 	sglx_cam_framenumbers = spikeglx_obj.cam_framenumbers
 	video_file_paths = spikeglx_obj.video_file_paths
 	video_info = spikeglx_obj.video_info
+	
 	for cam in video_file_paths.keys():
-		frame_start = sglx_cam_framenumbers[trial_num][epoch_start]
-		frame_end = sglx_cam_framenumbers[trial_num][epoch_end]
+		trial_frame_start = sglx_cam_framenumbers[trial_num][epoch_start]
+		trial_frame_end = sglx_cam_framenumbers[trial_num][epoch_end]
 		video_path = None
 		video_found_flag = False
 		for video in video_file_paths[cam]:
 			video_name = video.split('/')[-1]
-			if video_info[cam][video_name]['index_start'] <= frame_start:
-				if video_info[cam][video_name]['index_end'] >= frame_end:
+			video_frame_start = video_info[cam][video_name]['index_start']
+			video_frame_end = video_info[cam][video_name]['index_end']
+			if  trial_frame_start >= video_frame_start:
+				if trial_frame_end <= video_frame_end:
+					# trial frame end is within video frames
 					video_path = video
-					frame_start_shifted = frame_start - video_info[cam][video_name]['index_start']
-					frame_end_shifted = frame_end - video_info[cam][video_name]['index_start']
+					frame_start_shifted = trial_frame_start - video_info[cam][video_name]['index_start']
+					frame_end_shifted = trial_frame_end - video_info[cam][video_name]['index_start']
 					spikeglx_frames(video_path, session_obj, video_dict, target_path, trial_num, frame_start_shifted, frame_end_shifted, cam, thread_flag)
 					video_found_flag = True
 					break
@@ -394,19 +399,21 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 					pass
 					# DO SOMETHING HERE
 		if video_path == None:
-			if np.isnan(frame_start) and np.isnan(frame_end):
+			if np.isnan(trial_frame_start) and np.isnan(trial_frame_end):
 				# trial missing start and/or stop frame either due to
 				# error in trial or missing information
 				pass
 			else:
 				print('Video not found for trial {} although frame epochs found'.format(trial_num))
-				print('  Cam: {} | Video {}'.format(cam, os.path.basename(video_path)))
-				print('  Frame Start: {}'.format(frame_start))
-				print('  Frame End: {}'.format(frame_end))
+				print('  Cam: {}'.format(cam))
+				print('  Frame Start: {}'.format(trial_frame_start))
+				print('  Frame End: {}'.format(trial_frame_end))
+			spikeglx_obj.trial_missing_videos.append(trial_num)
 		elif video_found_flag == False:
 			print('Video crosses multiple videos for trial {}'.format(trial_num))
-			print('  Frame Start: {}'.format(frame_start))
-			print('  Frame End: {}'.format(frame_end))
+			print('  Frame Start: {}'.format(trial_frame_start))
+			print('  Frame End: {}'.format(trial_frame_end))
+			spikeglx_obj.trial_missing_videos.append(trial_num)
 
 def parse_wm_videos(spikeglx_obj, 
 										session_obj,
@@ -437,6 +444,8 @@ def parse_wm_videos(spikeglx_obj,
 	else:
 		for trial_num in sglx_cam_framenumbers_subset.keys():
 			parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path, epoch_start, epoch_end, thread_flag)
+	print('Video Parsing Complete.')
+	print('  Missing Videos: {}'.format(spikeglx_obj.trial_missing_videos))
 
 def find_wm_videos(df):
 	pass
