@@ -551,6 +551,11 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	sglx_cam_framenumbers = spikeglx_obj.cam_framenumbers
 	sglx_photodiode = spikeglx_obj.photodiode
 	sglx_cam_save = spikeglx_obj.cam_save
+	
+	# correlation test threshold
+	CORR_THRESHOLD = 0.95
+
+	# for UnityVR task, trial start and trial end times are sometimes asynchronous so extra checks required
 	pre_trial_shift = 0
 	if spikeglx_obj.monkey_name == 'gandalf':
 		pre_trial_shift = -1000 # approximate trial start 1000 ms before trial end of previous trial for extra buffer
@@ -622,7 +627,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 
 		# calculate correlations between ML and SGLX photodiode signals
 		corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
-		if corr > 0.95:
+		if corr > CORR_THRESHOLD:
 			low_corr_flag = False
 
 		############################################################################################
@@ -644,19 +649,13 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 					max_corr[0] = start_shift
 					max_corr[1] = corr
 				# print(f'  Trial {trial_num_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
-				if corr > 0.975:
+				if corr > CORR_THRESHOLD:
 					low_corr_flag = False
 				# stop at a full 10 second shift
-				elif start_shift > 10000:
+				elif start_shift > 5000:
 					print(f'Trial {trial_num_specified} correlation never corrected. Check alignment.')
 					print(f'	Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
 					break
-		if trial_num_specified >= 55:
-			print(f'Trial {trial_num_specified} Signal High | ML: {ml_analog_high} | SGLX: {sglx_analog_high_time}')
-			print(f'  SGLX Approx Start: {sglx_trial_start_approx} | SGLX Approx End: {sglx_trial_end_approx}')
-			print(f'  SGLX Exact Start: {sglx_trial_start} | SGLX Exact End: {sglx_trial_end}')
-		low_corr_flag = True # DELETE
-		print(f'Trial {trial_num_specified} Shift {start_shift - pre_trial_shift} | ML-SGLX Correlation: {round(corr, 3)}')
 		############################################################################################
 
 		# add trial start and end times to dictionary
