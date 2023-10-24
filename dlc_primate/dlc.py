@@ -21,8 +21,8 @@ VIDEO_ROOT = os.path.join(ROOT, 'tasks', 'rhAirpuff', '8. Probabilistic_Reward_A
 SESSION_ROOT = os.path.join(ROOT, 'data', 'processed', 'processed_Probabilistic_Reward_Airpuff_Choice')
 
 # Select session
-DATE = '230621'
-MONKEY = 'Aragorn'
+DATE = '231004'
+MONKEY = 'Gandalf'
 
 session_df = select_session(SESSION_ROOT, DATE, MONKEY, correct_only=True)
 video_path_list = get_trial_video_list(session_df, VIDEO_ROOT, DATE, MONKEY)

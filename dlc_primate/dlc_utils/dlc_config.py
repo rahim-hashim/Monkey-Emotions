@@ -122,7 +122,10 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 
 		if downsample_flag:
 				video_path_list = _dlc_downsample_videos(video_path_list)
-
+		print('Initializing Project...')
+		print(f'  Project name: {project_name}')
+		print(f'  Model: {model2use}')
+		print(f'  Initilization Videos: {video_path_list[0:1]}')
 		config_path, train_config_path = deeplabcut.create_pretrained_project(
 				project_name,
 				your_name,

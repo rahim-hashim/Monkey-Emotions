@@ -69,7 +69,7 @@ class SpikeGLX:
     self.trial_times = defaultdict(create_float_defaultdict)
     self.cam_framenumbers = defaultdict(create_float_defaultdict)
     self.ml_sglx_corr_matrix = None
-    self.trial_missing_videos = []
+    self.trial_missing_videos = defaultdict(list)
 
     if sglx_path is not None and monkey_name is not None and date is not None:
       self._find_SGLX()

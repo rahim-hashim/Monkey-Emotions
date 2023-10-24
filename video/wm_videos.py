@@ -71,7 +71,7 @@ def spikeglx_frames(video_path, session_obj, video_dict, target_path, trial_num,
 	video_path = os.path.join(video_folder, video_name)
 	# Delete video if it already exists
 	if os.path.exists(video_path):
-		print('	Deleting existing video file')
+		print(f'	Deleting existing video file: {video_path}')
 		os.remove(video_path)
 	# Get start and end frame numbers
 	if thread_flag:
@@ -408,12 +408,12 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 				print('  Cam: {}'.format(cam))
 				print('  Frame Start: {}'.format(trial_frame_start))
 				print('  Frame End: {}'.format(trial_frame_end))
-			spikeglx_obj.trial_missing_videos.append(trial_num)
+			spikeglx_obj.trial_missing_videos[cam].append(trial_num)
 		elif video_found_flag == False:
 			print('Video crosses multiple videos for trial {}'.format(trial_num))
 			print('  Frame Start: {}'.format(trial_frame_start))
 			print('  Frame End: {}'.format(trial_frame_end))
-			spikeglx_obj.trial_missing_videos.append(trial_num)
+			spikeglx_obj.trial_missing_videos[cam].append(trial_num)
 
 def parse_wm_videos(spikeglx_obj, 
 										session_obj,
@@ -431,7 +431,10 @@ def parse_wm_videos(spikeglx_obj,
 	video_dict = defaultdict(list)
 	target_path = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
 	print('Parsing Trials for Videos: {} - {}'.format(trial_start, trial_end))
+	print('  Epoch Start: {}'.format(epoch_start))
+	print('  Epoch End: {}'.format(epoch_end))
 	sglx_cam_framenumbers_subset = {k: spikeglx_obj.cam_framenumbers[k] for k in trial_subset}
+	print('  Average Number of Frames per Trial: {}'.format(np.mean([len(v) for v in sglx_cam_framenumbers_subset.values()])))
 	# threading for faster parsing
 	if thread_flag:
 		threads = []

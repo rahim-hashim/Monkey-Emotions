@@ -226,7 +226,7 @@ def markdown_calc(df, f, behavioral_code_dict, session_obj, verbose):
 		condition_str = '#### Condition {}\n'.format(condition)
 		md_list.append(condition_str)
 		f.write(condition_str)
-		lick_img_path = os.path.join(session_obj.figure_path, 'raster_by_cond_{}.png'.format(condition)) 
+		lick_img_path = os.path.join(session_obj.figure_path, 'raster_by_cond_{}.svg'.format(condition)) 
 		lick_form_str = '<img src="{}">\n\n'.format(lick_img_path)
 		md_list.append(lick_form_str)
 		f.write(lick_form_str)
@@ -325,7 +325,7 @@ def markdown_calc(df, f, behavioral_code_dict, session_obj, verbose):
 	choice_avg_header = '#### Choice Valence Probability\n'
 	md_list.append(choice_avg_header)
 	f.write(choice_avg_header)
-	choice_avg_path = os.path.join(session_obj.figure_path, 'session_choice_valence.png')
+	choice_avg_path = os.path.join(session_obj.figure_path, 'df_choice_valence.svg')
 	choice_avg_fig_str = '<img src="{}">\n'.format(choice_avg_path)
 	md_list.append(choice_avg_fig_str)
 	f.write(choice_avg_fig_str)

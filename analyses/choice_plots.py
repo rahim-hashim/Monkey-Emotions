@@ -41,28 +41,27 @@ def plot_heatmap_choice_valence(df, session_obj, ):
   '''heat map of choice trials'''
   FIGURE_SAVE_PATH = session_obj.figure_path
   # only get choice trials that are non-zero valence
-  session_choice = df[(df['choice_trial'] == 1) & \
-                      (df['fractal_count_in_block'] > 10)]
-  session_choice = session_choice[(session_choice['valence_1'] != 0)]
+  df_choice = df[(df['choice_trial'] == 1) & \
+                 (df['fractal_count_in_block'] > 5)]
   # get unique conditions
   f, axarr = plt.subplots(2,2)
   cmap = plt.cm.RdYlGn
   cmap.set_bad(color='white')  
-  conditions = list(sorted(df['condition'].unique()))
+  conditions = list(sorted(df_choice['condition'].unique()))
   # get unique valences
-  valences = sorted(df['valence_1'].unique(), reverse=True)
+  valences = sorted(df_choice['valence_1'].unique(), reverse=True)
   for index, plot in enumerate(range(len(axarr.flat))):
     # empty matrix of zeros
     choice_matrix = np.zeros((len(valences), len(valences)))
     # condition specific
     if index < 2:
       condition = conditions[index]
-      df_cond = df[df['condition'] == condition]
+      df_cond = df_choice[df_choice['condition'] == condition]
       choice_matrix = update_choice_matrix(choice_matrix, valences, df_cond)
       title = 'Pre-Switch' if condition == 1 else 'Post-Switch'
     # all conditions
     elif index == 2:
-      choice_matrix = update_choice_matrix(choice_matrix, valences, df)
+      choice_matrix = update_choice_matrix(choice_matrix, valences, df_choice)
       title = 'Entire Session'
     # ideal behavior
     elif index == 3:
@@ -156,7 +155,7 @@ def plot_avg_choice_valence(session_df_correct, session_obj):
   plt.tight_layout()
 
   # save figure
-  plot_title = 'session_choice_valence.svg'
+  plot_title = 'df_choice_valence.svg'
   img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
   # transparent background
   f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
