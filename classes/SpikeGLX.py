@@ -221,9 +221,9 @@ class SpikeGLX:
     plt.tight_layout()
     plt.show()
 
-  def save_obj(self):
+  def save_obj(self, target_folder=None):
     """Saves SpikeGLX object as pickle file"""
-    pkl_path = os.path.join(os.getcwd(), f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl')
+    pkl_path = os.path.join(target_folder, f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl')
     with open(pkl_path, 'wb') as f:
       # get info on size of pickle file
       print('Pickle file size: {} MB'.format(sys.getsizeof(dill.dumps(self))/1000000))

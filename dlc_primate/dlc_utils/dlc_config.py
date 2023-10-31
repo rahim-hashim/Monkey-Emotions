@@ -86,15 +86,15 @@ def get_trial_video_list(video_dir, camera_dict):
 	return dlc_video_path_dict
 
 def _dlc_clean_pretrained_project(config_path):
-  # delete the first video in the config file to rerun
-  print(f'Deleting files for rerun...')
-  parent_dir = os.path.dirname(config_path)
-  first_video_path = os.path.join(parent_dir, 'videos')
-  for video in os.listdir(first_video_path):
-    if '1030000' in video:
-      os.remove(os.path.join(first_video_path, video))
-      print(f'  Deleted: {video}')
-  print('Done deleting file.')
+	# delete the first video in the config file to rerun
+	print(f'Deleting files for rerun...')
+	parent_dir = os.path.dirname(config_path)
+	first_video_path = os.path.join(parent_dir, 'videos')
+	for video in os.listdir(first_video_path):
+		if '1030000' in video:
+			os.remove(os.path.join(first_video_path, video))
+			print(f'  Deleted: {video}')
+	print('Done deleting file.')
 
 
 def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
@@ -133,8 +133,9 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 				videotype=videotype,
 				model=model2use,
 				analyzevideo=True,
-				createlabeledvideo=True,
-				copy_videos=False, # must leave copy_videos=True
+				# filtered=False,					# causes error in plot_trajectories if True
+				createlabeledvideo=False, # causes error in plot_trajectories if True
+				copy_videos=False,
 		)
 		config_path_dict[key] = config_path
 		train_config_path_dict[key] = train_config_path
@@ -152,47 +153,56 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 	return config_path_dict, train_config_path_dict
 
 def dlc_run(config_path_dict, dlc_video_path_dict, start_video=0, end_video=10, videotype='mp4'):
-
-  for cam in dlc_video_path_dict.keys():
-    video_path_list = sorted(dlc_video_path_dict[cam], key=lambda x: int(re.findall(r'(\d+)_{0}'.format(cam), x)[0]))
-    video_list_subset = video_path_list[start_video:end_video]
-    config_path = config_path_dict[cam]
-    
+	"""Run DLC"""
+	for cam in dlc_video_path_dict.keys():
+		video_path_list = sorted(dlc_video_path_dict[cam], key=lambda x: int(re.findall(r'(\d+)_{0}'.format(cam), x)[0]))
+		if start_video == None:
+			start_video = 0
+		if end_video == None:
+			end_video = len(video_path_list)
+		video_list_subset = video_path_list[start_video:end_video]
+		try:
+			config_path = config_path_dict[cam]
+		except:
+			print('Config path not found. Likely not made in dlc_initialize_project. Skipping...')
+			print(f'  Camera: {cam}')
+			continue
+		
 		# Adding new videos to the config.yaml file
-    deeplabcut.add_new_videos(
+		deeplabcut.add_new_videos(
 			config_path, 
 			video_list_subset,
 			copy_videos=False, 
 			coords=None, 
 			extract_frames=False
-    )
+		)
 
-    # Analyze specified videos
-    deeplabcut.analyze_videos(
+		# Analyze specified videos
+		deeplabcut.analyze_videos(
 			config_path, 
 			video_list_subset, 
 			videotype, 
 			save_as_csv=True
-    )
+		)
 
-    # Filter predictions
-    deeplabcut.filterpredictions(
+		# Filter predictions
+		deeplabcut.filterpredictions(
 				config_path, 
 				video_list_subset, 
 				videotype=videotype)
 
-    # Create labeled videos
-    deeplabcut.create_labeled_video(
-        config_path, 
+		# Create labeled videos
+		deeplabcut.create_labeled_video(
+				config_path, 
 				video_list_subset, 
-        videotype, 
-        draw_skeleton=True, 
-        filtered=True,
-        trailpoints=5,
-    )
+				videotype, 
+				draw_skeleton=True, 
+				filtered=True,
+				trailpoints=5,
+		)
 
-    # Plot trajectories
-    deeplabcut.plot_trajectories(config_path, 
-																 video_list_subset, 
-																 videotype, 
-																 filtered=True)
+		# # Plot trajectories
+		# deeplabcut.plot_trajectories(config_path, 
+		# 														 video_list_subset, 
+		# 														 videotype, 
+		# 														 filtered=True)

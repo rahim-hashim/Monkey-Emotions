@@ -434,7 +434,6 @@ def parse_wm_videos(spikeglx_obj,
 	print('  Epoch Start: {}'.format(epoch_start))
 	print('  Epoch End: {}'.format(epoch_end))
 	sglx_cam_framenumbers_subset = {k: spikeglx_obj.cam_framenumbers[k] for k in trial_subset}
-	print('  Average Number of Frames per Trial: {}'.format(np.mean([len(v) for v in sglx_cam_framenumbers_subset.values()])))
 	# threading for faster parsing
 	if thread_flag:
 		threads = []

@@ -24,7 +24,7 @@ class Session:
 			self.df = None
 			self.date = None
 			df_flag = False
-		self.monkey = monkey_input
+		self.monkey = monkey_input.lower()
 		self.task = task
 		self.window_lick = 1000
 		# determine lick threshold
