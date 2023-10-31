@@ -650,11 +650,11 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			# shift sglx trial start and end times by 1 ms and try again
 			while low_corr_flag == True:
 				start_shift += 1
-				sglx_trial_start_approx += 1		# start at the end of the previous trial + pre_shift time (i.e. -1000ms before n-1 trial end)
-				sglx_trial_end_approx += 1			# end at start + length of ML photodiode signal
+				sglx_trial_start_approx_shift = sglx_trial_start_approx + start_shift		# start at the end of the previous trial + pre_shift time (i.e. -1000ms before n-1 trial end)
+				sglx_trial_end_approx_shift = sglx_trial_end_approx + start_shift				# end at start + length of ML photodiode signal
 				sglx_pd_signal_exact, sglx_pd_times_exact = \
 					time_to_samples(sglx_photodiode, sample_rate, sample_times, 
-													sglx_trial_start_approx, sglx_trial_end_approx)
+													sglx_trial_start_approx_shift, sglx_trial_end_approx_shift)
 				sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
 																		for i in range(len(ml_analog))]
 				corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
@@ -702,7 +702,6 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			# plot_pd_alignment(trial_specified, sglx_analog_times_approx, sglx_analog_approx,
 			# 				sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 			print(f'  ML-SGLX Correlation: {round(max_corr[1], 3)}')
-
 	
 	# plot correlation matrix
 	plot_spikeglx_ml_corr(correlation_matrix, 100)
