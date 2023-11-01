@@ -513,6 +513,9 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	only for the first trial. This is done by finding the offset between the two
 	signals and then shifting the ML signal by that amount.
 	"""
+	# create a log file in the data directory
+	# log_file = open(f'.log', 'w')
+
 	# get data from SpikeGLX object
 	sample_rate = spikeglx_obj.sample_rate
 	sample_times = spikeglx_obj.sample_times
@@ -598,18 +601,18 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 											sglx_trial_start, sglx_trial_end)
 		sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
 																	for i in range(len(ml_analog))]
-
-		print('SGLX Analog High:', sglx_analog_high)
-		print('ML Analog High:', ml_analog_high)
-		print('SGLX ANALOG HIGH TIME:', sglx_analog_high_time)
-		print('SGLX TRIAL START:', sglx_trial_start)
-		print('SGLX TRIAL END:', sglx_trial_end)
-		print('SGLX Approx End:', sglx_trial_end_approx)
-		print('SGLX Approx Start:', sglx_trial_start_approx)
-		print('SGLX Approx PD:', sglx_analog_approx[:5], sglx_analog_approx[-5:])
-		print(f'SGLX EXACT:', sglx_pd_signal_exact[:50])
-		print(f'SGLX SAMPLED:', sglx_pd_signal_ml_sampled[:50])
-		print(f'ML:', ml_analog[:50])
+		# LOGGING
+		# print('SGLX Analog High:', sglx_analog_high)
+		# print('ML Analog High:', ml_analog_high)
+		# print('SGLX ANALOG HIGH TIME:', sglx_analog_high_time)
+		# print('SGLX TRIAL START:', sglx_trial_start)
+		# print('SGLX TRIAL END:', sglx_trial_end)
+		# print('SGLX Approx End:', sglx_trial_end_approx)
+		# print('SGLX Approx Start:', sglx_trial_start_approx)
+		# print('SGLX Approx PD:', sglx_analog_approx[:5], sglx_analog_approx[-5:])
+		# print(f'SGLX EXACT:', sglx_pd_signal_exact[:50])
+		# print(f'SGLX SAMPLED:', sglx_pd_signal_ml_sampled[:50])
+		# print(f'ML:', ml_analog[:50])
 		# calculate correlations between ML and SGLX photodiode signals
 		corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
 		max_corr = [0, corr] # [shift, corr]
@@ -674,7 +677,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		correlation_matrix[trial_index_specified] = max_corr[1]
 	
 		# plot trial if correlation between ML and SGLX photodiode signal is low
-		if low_corr_flag or trial_index_specified+1 == 207:
+		if low_corr_flag:
 			plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
 							sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 			# plot_pd_alignment(trial_specified, sglx_analog_times_approx, sglx_analog_approx,
