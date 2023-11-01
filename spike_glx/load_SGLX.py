@@ -1,6 +1,7 @@
 import os
 import dill
 import pickle
+from collections import defaultdict
 # Custom classes
 from classes.SpikeGLX import SpikeGLX
 # Custom modules
@@ -29,7 +30,27 @@ def load_sglx(session_df, session_obj, file_container_obj, signal_dict, epochs):
     print(f'Found pickled spikeglx_obj: {pkl_path_str}')
     with open(pkl_path, 'rb') as f:
       spikeglx_obj = dill.load(f)
-      return spikeglx_obj
+    # update sglx path
+    print(f'Updating spikeglx_obj paths...')
+    spikeglx_obj.sglx_dir_path = file_container_obj.spikeglx_dir_path
+    print(f'  Updated sglx_dir_path to: {spikeglx_obj.sglx_dir_path}')
+    # update video path
+    try:
+      del spikeglx_obj.video_file_paths
+      print(f'  Deleted old video_file_paths')
+    except:
+      pass
+    try:
+      del spikeglx_obj.video_info
+      print(f'  Deleted old video_info')
+    except:
+      pass
+    spikeglx_obj.video_file_paths = defaultdict(list)
+    spikeglx_obj.video_info = defaultdict(lambda: defaultdict(float))
+    print(f'  Updating video_file_paths and video_info...')
+    spikeglx_obj._get_whitematter_video_paths(file_container_obj.white_matter_dir_path)
+    spikeglx_obj._check_video_paths()
+    return spikeglx_obj
   else:
     sglx_dir_path = file_container_obj.spikeglx_dir_path
     sglx_wm_path = file_container_obj.white_matter_dir_path

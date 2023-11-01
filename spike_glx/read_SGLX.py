@@ -559,7 +559,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	sglx_cam_save = spikeglx_obj.cam_save
 	
 	# correlation test threshold
-	CORR_THRESHOLD = 0.97
+	CORR_THRESHOLD = 0.99
 
 	# for UnityVR task, trial start and trial end times are sometimes asynchronous so extra checks required
 	pre_trial_shift = 200
@@ -645,6 +645,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 
 		# Correlation test with shifting sglx start times to find the best start index
 		elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
+			print(f'Trial {trial_index_specified+1} not corrected on photodiode high approximation. Correlation: {round(corr, 3)}')
+			print(f'  Correlation test with shifting SGLX start times to find the best start index...')
 			start_shift = 0
 			max_corr = [0, 0] # [shift, corr]
 			# shift sglx trial start and end times by 1 ms and try again
@@ -664,11 +666,11 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				# print(f'  Trial {trial_index_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
 				if corr > CORR_THRESHOLD:
 					low_corr_flag = False
-					print(f'Trial {trial_index_specified+1} | Correlation: {round(corr, 3)} | Shift: {pre_trial_shift+start_shift}')
+					print(f'  Photodiode aligned. Correlation: {round(corr, 3)} | Shift: {pre_trial_shift+start_shift}')
 				# stop at a full 5 second shift after the end of the previous trial
 				elif start_shift > 5000:
-					print(f'Trial {trial_index_specified+1} correlation never corrected. Check alignment.')
-					print(f'	Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
+					print(f'  Trial correlation never corrected above {CORR_THRESHOLD}. Check alignment.')
+					print(f'		Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
 					break
 			# set sglx_trial_start to the best shift
 			sglx_trial_start = sglx_trial_start_approx + max_corr[0]
@@ -680,8 +682,10 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		# add trial start and end times to dictionary
 		sglx_trial_times[trial_index_specified]['start'] = sglx_trial_start
 		sglx_trial_times[trial_index_specified]['end'] =  sglx_trial_end
-		sglx_cam_framenumbers = spikeglx_cam_frames_window(spikeglx_obj, trial_index_specified, sglx_trial_times, sglx_cam_framenumbers, 
-																											 col_start='start', col_end='end')
+		sglx_cam_framenumbers = \
+				spikeglx_cam_frames_window(spikeglx_obj, trial_index_specified, 
+																	 sglx_trial_times, sglx_cam_framenumbers, 
+																	 col_start='start', col_end='end')
 		
 		# add epoch times to dictionary
 		for e_index, epoch in enumerate(epochs):
