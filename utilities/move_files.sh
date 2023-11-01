@@ -12,7 +12,7 @@ echo "  $target_path"
 monkey="Bear"
 # set date variable to todays date (i.e. YYMMDD)
 # date_str=$(date +%y%m%d)
-date_str='231030'
+date_str='231101'
 if [ -z "$monkey" ]; then
   echo "Searching for all monkeys for $date_str"
 else

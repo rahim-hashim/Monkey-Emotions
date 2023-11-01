@@ -65,6 +65,7 @@ def load_sglx(session_df, session_obj, file_container_obj, signal_dict, epochs):
                             signal_dict)
     print('SpikeGLX object created.')
     print('Aligning photodiode signals from ML and SpikeGLX...')
+    print(min(spikeglx_obj.sample_times))
     spikeglx_obj = read_SGLX.align_sglx_ml(spikeglx_obj, session_df, epochs)
     print('  Done.')
     print('Comparing ML and SpikeGLX photodiode signals...')

@@ -19,6 +19,9 @@ from tkinter import filedialog
 from spike_glx.sglx_lib import readMeta, SampRate, makeMemMapRaw
 from spike_glx.sglx_lib import GainCorrectIM, GainCorrectNI, GainCorrectNIChannel
 
+# log all print statements to file
+# sys.stdout = open('read_SGLX.log', 'w')
+
 def print_meta(meta, verbose=False):
 	"""
 	Reads metadata and prints the file name, number of channels,
@@ -68,9 +71,14 @@ def time_to_samples(data_array, sample_rate, data_times, tStart, tEnd):
 	'''
 	first_sample = int(sample_rate*tStart/1000)
 	last_sample = int(sample_rate*tEnd/1000)
-	data_array = data_array[first_sample:last_sample]
-	data_times = data_times[first_sample:last_sample]
-	return data_array, data_times
+	data_array_selected = data_array[first_sample:last_sample]
+	data_times_selected = data_times[first_sample:last_sample]
+	# print('  first sample:', sample_rate*tStart/1000, first_sample, tStart)
+	# print('  last sample:', sample_rate*tEnd/1000, last_sample, tEnd)
+	# print(data_array[:10])
+	# print(data_times[:10])
+	return data_array_selected, data_times_selected
+
 
 def load_spikeglx(binFullPath):
 	"""
@@ -135,12 +143,9 @@ def parse_channels(meta, chan_dict, signal_dict):
 		else:
 				# apply gain correction and convert to mV
 				convData = 1e3*GainCorrectNI(rawData, chanList, meta)
-		tDat = np.arange(0, len(convData))
+		tDat = np.arange(0, len(convData), dtype='int64')
 		tDat = 1000*tDat/sRate
 		chan_dict_corrected[chan] = convData
-		print(f' Channel [{chan}]: {signal_dict[chan]}')
-		print(f'  Max Val: {round(max(convData), 3)}')
-		print(f'  Min Val: {round(min(convData), 3)}')
 	return sRate, tDat, chan_dict_corrected
 
 
@@ -398,16 +403,6 @@ def spikeglx_cam_frames_window(spikeglx_obj, trial_num, spikeglx_cam_times, spik
 		spikeglx_cam_framenumbers[trial_num][col_end] = np.nan
 	return spikeglx_cam_framenumbers
 
-def time_to_samples(data_array, sample_rate, data_times, tStart, tEnd):
-	'''
-	Converts time in milliseconds to samples
-	from sglx data array
-	'''
-	first_sample = int(sample_rate*tStart/1000)
-	last_sample = int(sample_rate*tEnd/1000)
-	data_array = data_array[first_sample:last_sample]
-	data_times = data_times[first_sample:last_sample]
-	return data_array, data_times
 
 def align_ml_sglx_verbose(t_index, 
 													trial_start_pd_ML,
@@ -481,38 +476,6 @@ def plot_pd_alignment(trial_specified, sglx_pd_times, sglx_pd_signal,
 	print('  SpikeGLX Trial Start   |  {:<7}'.format(round(sglx_trial_times[trial_index]['start'], 2)))
 	print('  SpikeGLX Trial End     |  {:<7}'.format(round(sglx_trial_times[trial_index]['end'], 2)))
 	print('  SpikeGLX Num Frames    |  {:<7}'.format(spikeglx_num_frames))
-
-def shift_correlation_test(ml_analog, ml_photodiode, sglx_pd_signal_exact, sglx_photodiode, sample_rate, sample_times, ):
-
-	sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
-															for i in range(len(ml_analog))]
-
-	# calculate correlations between ML and SGLX photodiode signals
-	corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
-	start_shift = 0
-	# confidence is high that everything is aligned appropriately
-	if corr > 0.95:
-		low_corr_flag = False
-	else:
-		# shift sglx trial start and end times by 1 ms and try again
-		low_corr_flag = True
-		while low_corr_flag == True:
-			start_shift += 1
-			sglx_trial_start += 1
-			sglx_trial_end += 1
-			sglx_pd_signal_exact, sglx_pd_times_exact = \
-				time_to_samples(sglx_photodiode, sample_rate, sample_times, 
-												sglx_trial_start, sglx_trial_end)
-			sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
-																	for i in range(len(ml_analog))]
-			corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
-			if corr > 0.95:
-				low_corr_flag = False
-			# stop at a full 10 second shift
-			elif start_shift > 10000:
-				print(' Correlation never corrected. Check alignment.')
-				break
-	return corr, start_shift
 
 def plot_spikeglx_ml_corr(correlation_matrix, corr_row_len):
 	f, ax = plt.subplots(figsize=(15, 8))
@@ -636,6 +599,17 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		sglx_pd_signal_ml_sampled = [sglx_pd_signal_exact[int(i*sample_rate/1000)] 
 																	for i in range(len(ml_analog))]
 
+		print('SGLX Analog High:', sglx_analog_high)
+		print('ML Analog High:', ml_analog_high)
+		print('SGLX ANALOG HIGH TIME:', sglx_analog_high_time)
+		print('SGLX TRIAL START:', sglx_trial_start)
+		print('SGLX TRIAL END:', sglx_trial_end)
+		print('SGLX Approx End:', sglx_trial_end_approx)
+		print('SGLX Approx Start:', sglx_trial_start_approx)
+		print('SGLX Approx PD:', sglx_analog_approx[:5], sglx_analog_approx[-5:])
+		print(f'SGLX EXACT:', sglx_pd_signal_exact[:50])
+		print(f'SGLX SAMPLED:', sglx_pd_signal_ml_sampled[:50])
+		print(f'ML:', ml_analog[:50])
 		# calculate correlations between ML and SGLX photodiode signals
 		corr = np.corrcoef(ml_photodiode, sglx_pd_signal_ml_sampled)[0, 1]
 		max_corr = [0, corr] # [shift, corr]
@@ -645,7 +619,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 
 		# Correlation test with shifting sglx start times to find the best start index
 		elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
-			print(f'Trial {trial_index_specified+1} low on first approximation | Correlation: {round(corr, 3)}')
+			print(f'Trial {trial_index_specified+1} low on first approximation | Correlation: {round(corr, 3)} | SGLX High Time: {round(sglx_analog_high, 2)} | ML High Time: {round(ml_analog_high, 2)}')
 			start_shift = 0
 			max_corr = [0, 0] # [shift, corr]
 			# shift sglx trial start and end times by 1 ms and try again
@@ -669,7 +643,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				# stop at a full 5 second shift after the end of the previous trial
 				elif start_shift > 5000:
 					print(f'  Trial correlation never corrected above {CORR_THRESHOLD}. Check alignment.')
-					print(f'		Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
+					print(f'    Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
 					break
 			# set sglx_trial_start to the best shift
 			sglx_trial_start = sglx_trial_start_approx + max_corr[0]
@@ -679,6 +653,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 												sglx_trial_start, sglx_trial_end)
 
 		# add trial start and end times to dictionary
+		print(f'  Trial {trial_index_specified+1} | Epoch start {sglx_trial_start} | Epoch end {sglx_trial_end}')
 		sglx_trial_times[trial_index_specified]['start'] = sglx_trial_start
 		sglx_trial_times[trial_index_specified]['end'] =  sglx_trial_end
 		sglx_cam_framenumbers = \
@@ -699,12 +674,13 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		correlation_matrix[trial_index_specified] = max_corr[1]
 	
 		# plot trial if correlation between ML and SGLX photodiode signal is low
-		if low_corr_flag:
+		if low_corr_flag or trial_index_specified+1 == 207:
 			plot_pd_alignment(trial_specified, sglx_pd_times_exact, sglx_pd_signal_exact,
 							sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 			# plot_pd_alignment(trial_specified, sglx_analog_times_approx, sglx_analog_approx,
 			# 				sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 			print(f'  ML-SGLX Correlation: {round(max_corr[1], 3)}')
+			sys.exit()
 	
 	# plot correlation matrix
 	plot_spikeglx_ml_corr(correlation_matrix, 100)
