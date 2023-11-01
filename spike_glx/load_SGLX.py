@@ -78,8 +78,5 @@ def load_sglx(session_df, session_obj, file_container_obj, signal_dict, epochs):
     print('  Done.')
     print('Saving spikeglx_obj...')
     spikeglx_obj.save_obj(target_folder=session_folder)
-    print(f'  Done. Saved spikeglx_obj to {spikeglx_obj.pkl_path}')
+    print(f'Done. Saved spikeglx_obj.')
     return spikeglx_obj
-  # except:
-  #   print(f'Error loading spikeglx_obj for: {monkey_name}_{date_str}')
-  #   return None

@@ -107,7 +107,8 @@ class SpikeGLX:
         cap = cv2.VideoCapture(video_file_path)
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = cap.get(cv2.CAP_PROP_FPS)
-        video_name = video_file_path.split('/')[-1]
+        # get last child of path
+        video_name = os.path.basename(video_file_path)
         video_length_minutes = round(frame_count/fps/60, 2)
         # align vertical line with print statement
         print('  Video: {:<30} | Frames: {:<6} | FPS: {:<5} | Length (minutes): {:<7}'.format(video_name, frame_count, fps, video_length_minutes))
@@ -226,8 +227,8 @@ class SpikeGLX:
     pkl_path = os.path.join(target_folder, f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl')
     with open(pkl_path, 'wb') as f:
       # get info on size of pickle file
-      print('Pickle file size: {} MB'.format(sys.getsizeof(dill.dumps(self))/1000000))
+      print('  Pickle file size: {} MB'.format(sys.getsizeof(dill.dumps(self))/1000000))
       # dump pickle file
       dill.dump(self, f)
-      print('Pickle file saved: {}'.format(pkl_path))
+      print('  Pickle file path: {}'.format(pkl_path))
       self.pkl_path = pkl_path

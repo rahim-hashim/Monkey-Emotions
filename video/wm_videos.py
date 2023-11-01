@@ -383,7 +383,7 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 		video_path = None
 		video_found_flag = False
 		for video in video_file_paths[cam]:
-			video_name = video.split('/')[-1]
+			video_name = os.path.basename(video)
 			video_frame_start = video_info[cam][video_name]['index_start']
 			video_frame_end = video_info[cam][video_name]['index_end']
 			if  trial_frame_start >= video_frame_start:

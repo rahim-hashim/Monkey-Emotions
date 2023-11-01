@@ -645,8 +645,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 
 		# Correlation test with shifting sglx start times to find the best start index
 		elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
-			print(f'Trial {trial_index_specified+1} not corrected on photodiode high approximation. Correlation: {round(corr, 3)}')
-			print(f'  Correlation test with shifting SGLX start times to find the best start index...')
+			print(f'Trial {trial_index_specified+1} low on first approximation | Correlation: {round(corr, 3)}')
 			start_shift = 0
 			max_corr = [0, 0] # [shift, corr]
 			# shift sglx trial start and end times by 1 ms and try again
