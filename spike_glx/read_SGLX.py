@@ -525,7 +525,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	sglx_cam_save = spikeglx_obj.cam_save
 	
 	# correlation test threshold
-	CORR_THRESHOLD = 0.99
+	CORR_THRESHOLD = 0.98
 
 	# for UnityVR task, trial start and trial end times are sometimes asynchronous so extra checks required
 	pre_trial_shift = 200
@@ -683,7 +683,6 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			# plot_pd_alignment(trial_specified, sglx_analog_times_approx, sglx_analog_approx,
 			# 				sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 			print(f'  ML-SGLX Correlation: {round(max_corr[1], 3)}')
-			sys.exit()
 	
 	# plot correlation matrix
 	plot_spikeglx_ml_corr(correlation_matrix, 100)
