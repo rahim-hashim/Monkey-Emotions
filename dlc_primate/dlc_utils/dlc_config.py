@@ -105,8 +105,10 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 	# Create ModelZoo project
 	for key in dlc_video_path_dict.keys():
 		body_part = camera_dict[key]
-		project_name = f'{session_obj.date}_{session_obj.monkey}_{body_part}'
-		your_name = 'rahim'
+		# shortened for Windows because of path length [WinError 206]
+		body_part_str = body_part[-1]
+		project_name = f'{session_obj.monkey}_{body_part}'
+		your_name = 'rh'
 		if 'face' in body_part:
 			model2use = 'primate_face'
 		else:
@@ -135,7 +137,7 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 				analyzevideo=True,
 				# filtered=False,					# causes error in plot_trajectories if True
 				createlabeledvideo=False, # causes error in plot_trajectories if True
-				copy_videos=False,
+				copy_videos=True,					# must be true if on PC
 		)
 		config_path_dict[key] = config_path
 		train_config_path_dict[key] = train_config_path

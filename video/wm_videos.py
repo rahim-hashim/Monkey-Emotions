@@ -14,7 +14,7 @@ from collections import defaultdict
 # Custom classes
 from classes import FaceLandmarks
 # Custom functions
-from analyses.eye_capture import frame_eye_capture
+# from analyses.eye_capture import frame_eye_capture
 
 def make_video(frames, frame_rate, frame_size, video_name):
 	fourcc = cv2.VideoWriter_fourcc(*'mp4v')
