@@ -66,7 +66,7 @@ def measure_hist(df, session_obj):
 		df_valence = df[df['valence'] == valence]
 		# Lick
 		lick_data = np.array(df_valence['lick_duration'])
-		blink_data = np.array(df_valence['blink_raster_window'])
+		blink_data = np.array(df_valence['pupil_raster_window_avg'])
 		sns.kdeplot(ax=ax1,
 								data=lick_data,  
 								color=COLORS[valence], 

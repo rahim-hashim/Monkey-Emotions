@@ -316,7 +316,7 @@ def markdown_calc(df, f, behavioral_code_dict, session_obj, verbose):
 	choice_heatmap_header = '#### Choice Heatmap Probability\n'
 	md_list.append(choice_heatmap_header)
 	f.write(choice_heatmap_header)
-	choice_heatmap_path = os.path.join(session_obj.figure_path, 'choice_heatmap.png')
+	choice_heatmap_path = os.path.join(session_obj.figure_path, 'choice_heatmap.svg')
 	choice_heatmap_fig_str = '<img src="{}">\n'.format(choice_heatmap_path)
 	md_list.append(choice_heatmap_fig_str)
 	f.write(choice_heatmap_fig_str)

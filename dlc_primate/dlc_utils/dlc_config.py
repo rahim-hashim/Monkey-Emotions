@@ -2,6 +2,7 @@ import re
 import os
 import cv2
 import pickle
+import platform
 import deeplabcut
 import numpy as np
 import pandas as pd
@@ -102,13 +103,18 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 	config_path_dict = {}
 	train_config_path_dict = {}
 
+	# see if we are on macOS, if so, symlink videos works
+	copy_video_flag = True
+	if platform.system() == 'Darwin':
+		copy_video_flag = False
+
 	# Create ModelZoo project
 	for key in dlc_video_path_dict.keys():
 		body_part = camera_dict[key]
 		# shortened for Windows because of path length [WinError 206]
-		body_part_str = body_part[-1]
-		project_name = f'{session_obj.monkey}_{body_part}'
 		your_name = 'rh'
+		directory_name = f'{session_obj.date}_{session_obj.monkey}'
+		project_name = f'{body_part}'
 		if 'face' in body_part:
 			model2use = 'primate_face'
 		else:
@@ -135,9 +141,10 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 				videotype=videotype,
 				model=model2use,
 				analyzevideo=True,
-				# filtered=False,					# causes error in plot_trajectories if True
-				createlabeledvideo=False, # causes error in plot_trajectories if True
-				copy_videos=True,					# must be true if on PC
+				working_directory=directory_name,
+				# filtered=False,								# causes error in plot_trajectories if True
+				createlabeledvideo=False, 			# causes error in plot_trajectories if True
+				copy_videos=copy_video_flag,		# must be true if on PC
 		)
 		config_path_dict[key] = config_path
 		train_config_path_dict[key] = train_config_path
