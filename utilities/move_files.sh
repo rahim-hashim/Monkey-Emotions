@@ -1,10 +1,12 @@
 #!/bin/bash
 # change directory to the directory with the data
-cd "/Users/rahimhashim/Google Drive/My Drive/Columbia/Salzman/Monkey-Training/tasks/rhAirpuff/8. Probabilistic_Reward_Airpuff_Choice"
+# cd "/Users/rahimhashim/Google Drive/My Drive/Columbia/Salzman/Monkey-Training/tasks/rhAirpuff/8. Probabilistic_Reward_Airpuff_Choice"
+cd "/Users/rahimhashim/Google Drive/My Drive/Columbia/Salzman/Monkey-Training/tasks/rhAirpuff/9. Reward_Airpuff_Generalization"
 echo "Current directory is:"
 echo "  $PWD"
 # set target_path to the path of the directory with all the data
-target_path="data_Probabilistic_Reward_Airpuff_Choice/"
+# target_path="data_Probabilistic_Reward_Airpuff_Choice/"
+target_path="data_Probabilistic_Reward_Airpuff_Generalization"
 echo "Target path is:"
 echo "  $target_path"
 
@@ -12,7 +14,7 @@ echo "  $target_path"
 monkey="Aragorn"
 # set date variable to todays date (i.e. YYMMDD)
 # date_str=$(date +%y%m%d)
-date_str='231106'
+date_str='231114'
 if [ -z "$monkey" ]; then
   echo "Searching for all monkeys for $date_str"
 else

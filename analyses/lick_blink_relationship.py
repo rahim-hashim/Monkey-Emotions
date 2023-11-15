@@ -9,7 +9,7 @@ import warnings
 warnings.filterwarnings("ignore")
 from matplotlib.offsetbox import AnchoredText
 
-def lick_blink_linear(df, session_obj):
+def lick_blink_linear(session_df, session_obj):
 	"""
 	Plots and calculates the linear relationship
 	between lick rate and blink duration for 
@@ -19,9 +19,12 @@ def lick_blink_linear(df, session_obj):
 	COLORS = session_obj.valence_colors
 	import seaborn as sns
 	
-	f, ax = plt.subplots(1,1, figsize=(4,4))
+	#reinforcement trials only
+	df = session_df[session_df['reinforcement_trial'] == 1]
+	
 
 	# Plot regression line from all valences
+	f, ax = plt.subplots(1,1, figsize=(4,4))
 	x_all = np.array(df['lick_duration'].tolist())
 	y_all = df['blink_duration_offscreen'].tolist()
 	sns.regplot(x=x_all, y=y_all, color='black', label='all', ax=ax, scatter=False)

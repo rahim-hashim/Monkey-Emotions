@@ -202,9 +202,10 @@ def two_sample_test(data_type, df, data_raster, condition, session_obj, directio
 
 def t_test_moving_avg(df, session_obj, condition):
 	# T-Test Plots
+	df_reinforcement = df[df['reinforcement_trial'] == 1]
 	lick_data_probability, blink_probability, lick_data_duration, DEM_duration, blink_duration =\
-		 		 generate_data_dict(df, session_obj)
+		 		 generate_data_dict(df_reinforcement, session_obj)
 	set_plot_params(FONT=10, AXES_TITLE=11, AXES_LABEL=10, TICK_LABEL=10, LEGEND=8, TITLE=14)
-	two_sample_test('lick-duration', df, lick_data_duration, condition, session_obj)
-	two_sample_test('DEM-duration', df, DEM_duration, condition, session_obj)
-	two_sample_test('blink-duration', df, blink_duration, condition, session_obj)	
+	two_sample_test('lick-duration', df_reinforcement, lick_data_duration, condition, session_obj)
+	two_sample_test('DEM-duration', df_reinforcement, DEM_duration, condition, session_obj)
+	two_sample_test('blink-duration', df_reinforcement, blink_duration, condition, session_obj)	

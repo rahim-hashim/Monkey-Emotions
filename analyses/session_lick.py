@@ -8,13 +8,13 @@ from collections import defaultdict
 from classes.Session import Session
 from utilities.plot_helper import smooth_plot, round_up_to_odd, moving_avg
 
-def session_lick(df: pd.DataFrame, session_obj: Session):
+def session_lick(session_df: pd.DataFrame, session_obj: Session):
   '''
     session_lick plots the lick duration within the last <session_obj.window>ms of delay 
     across the entire session broken down by fractal
 
     Args
-      - df (pd.DataFrame): session DataFrame
+      - session_df (pd.DataFrame): session DataFrame
       - session_obj (Session): Session object with metadata and plotting parameters
 
     Plots
@@ -23,14 +23,17 @@ def session_lick(df: pd.DataFrame, session_obj: Session):
       - axarr2 (plt.subplots): smoothened line plot of blink count each trial
         across session
   '''
+  # reinforcement trials only
+  df = session_df[session_df['reinforcement_trial'] == 1]
   
   LABELS = session_obj.stim_labels
-  FRACTAL_NAMES = df['fractal_chosen'].unique().tolist()
+  FRACTAL_NAMES = sorted(df['fractal_chosen'].unique().tolist())
   COLORS = session_obj.colors
   FIGURE_SAVE_PATH = session_obj.figure_path
   LICK_WINDOW_THRESHOLD = session_obj.window_lick
   BLINK_WINDOW_THRESHOLD = session_obj.window_blink
   VALENCE_COLORS = session_obj.valence_colors
+
 
   f1, axarr1 = plt.subplots(len(LABELS),1, sharex=True, sharey=True, figsize=(10,10))
   f2, axarr2 = plt.subplots(len(LABELS),1, sharex=True, sharey=True, figsize=(10,10))

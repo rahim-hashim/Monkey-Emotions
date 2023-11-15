@@ -94,7 +94,10 @@ def grant_plots(session_df, session_obj):
 
 		FIGURE_SAVE_PATH = session_obj.figure_path
 		TRIAL_THRESHOLD = 20
-		session_df_correct = session_df[session_df['correct'] == 1]
+		# only reinforcement trials
+		session_df_reinforcement = session_df[session_df['reinforcement_trial'] == 1]
+		# only correct trials
+		session_df_correct = session_df_reinforcement[session_df_reinforcement['correct'] == 1]
 		# only include trials after subject has seen fractal <TRIAL_THRESHOLD> number of times
 		session_df_count = session_df_correct[session_df_correct['fractal_count_in_block'] > TRIAL_THRESHOLD]
 		# only include one switch (for now)

@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 from pprint import pprint
 from itertools import combinations
+import tkinter as tk
 from tkinter.filedialog import askdirectory, askopenfilename
 # Custom modules
 from utilities.mat_import import loadmat
@@ -25,18 +26,22 @@ class FileContainer:
 		"""
 		Load behavior, video, and spikeglx files
 		"""
+		# initialize tkinter window
+		root = tk.Tk()
+		root.withdraw()
+		
 		# load root directory (computer/task dependent)
 		if ROOT_DIR is None:
-			root = '/Users/rahimhashim/My Drive/Columbia/Salzman/Monkey-Training/tasks/rhAirpuff'
+			root_path = '/Users/rahimhashim/My Drive/Columbia/Salzman/Monkey-Training/tasks/rhAirpuff'
 		else:
-			root = ROOT_DIR
+			root_path = ROOT_DIR
 
 		# load behavior file
 		print('Select .bhv2/.h5 behavior file (i.e. 230927_Aragorn_choice.h5)')
 		beh_file_path = askopenfilename(title='Select .bhv2 or .h5 behavior file', 
 																		filetypes=[('bhv2 files', '.bhv2'),
 																							('.h5 files', '.h5')],
-																		initialdir=root) 
+																		initialdir=root_path) 
 		print('Behavior file selected: {}'.format(beh_file_path))
 		beh_file_name = os.path.basename(beh_file_path)
 		ml_date = beh_file_name.split('_')[0]
@@ -49,7 +54,7 @@ class FileContainer:
 		# load video files
 		print('Select directory containing White Matter video files (i.e. 230927_Aragorn)')
 		video_dir_path = askdirectory(title='Select directory containing White Matter video files', 
-																	initialdir=root)
+																	initialdir=root_path)
 		video_file_list = os.listdir(video_dir_path)
 		print('Video files directory selected: {}'.format(video_dir_path))
 		video_dir_name = os.path.basename(video_dir_path)
@@ -63,7 +68,7 @@ class FileContainer:
 		# load spikeglx files
 		print('Select directory containing SpikeGLX files')
 		sglx_dir_path = askdirectory(title='Select directory containing SpikeGLX .bin and .meta files',
-																initialdir=root)
+																initialdir=root_path)
 		sglx_file_list = os.listdir(sglx_dir_path)
 		print('SpikeGLX files directory selected: {}'.format(sglx_dir_path))
 		sglx_dir_name = os.path.basename(sglx_dir_path)
@@ -93,6 +98,9 @@ class FileContainer:
 		self.white_matter_dir_path = video_dir_path
 		# parent directory of sglx_dir_path is the sglx data directory used in pipeline
 		self.spikeglx_dir_path = os.path.dirname(sglx_dir_path)
+
+		# close tkinter window
+		root.destroy()
 	
 	def ml_to_pd(self):
 		ml_beh_file = self.ml_file_path

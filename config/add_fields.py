@@ -194,13 +194,13 @@ def fractal_in_block(df):
 			fractal_count: trial presentation number in block
 	"""
 
-	fractals = sorted(df['stimuli_name_1'].unique())
+	fractals = sorted(df['fractal_chosen'].unique())
 	zero_counter = np.zeros(len(fractals), dtype=int)
 	fractal_count = []
 	for trial_index in range(len(df)):
 		if df['trial_in_block'].iloc[trial_index] == 0:
 			zero_counter = np.zeros(len(fractals), dtype=int)
-		fractal = df['stimuli_name_1'].iloc[trial_index]
+		fractal = df['fractal_chosen'].iloc[trial_index]
 		fractal_index = fractals.index(fractal)
 		# only increment for correct (i.e. outcome received) trials
 		if df['correct'].iloc[trial_index] == 1:
@@ -429,6 +429,18 @@ def prelim_behavior_analysis(df, session_obj, behavioral_code_dict):
 	session_obj.blink_duration['all'] = avg_blink_all
 	return session_obj
 
+def novel_fractal_exp(row):
+	"""
+	In experiments with novel fractals, each novel fractal has an
+	integer (_fractal_1.png, _fractal_2.png, etc.). This function
+	removes the integer from the fractal name and replaces it with
+	'_fractal_E' to denote that it is a novel fractal.
+	"""
+	fractal_chosen = row['fractal_chosen']
+	if fractal_chosen[-1].isdigit():
+		fractal_chosen = '_fractal_E'
+	return fractal_chosen
+
 def add_fields(df, session_obj, behavioral_code_dict):
 	print('Adding additional fields to session_df DataFrame...')
 
@@ -459,11 +471,6 @@ def add_fields(df, session_obj, behavioral_code_dict):
 	df['DEM_raster'] = df.apply(DEM_window, axis=1)
 	df['trial_bins'] = df.apply(trial_bins, axis=1)
 	df['trial_in_block'] = trial_in_block(df)
-	try:
-		df['fractal_count_in_block'] = fractal_in_block(df)
-	except:
-		print('   No fractal column found, skipping fractal count...')
-		pass
 	# df = outcome_back_counter(df)
 	try:
 		df = df.apply(outcome_count_window,
@@ -539,6 +546,15 @@ def add_fields(df, session_obj, behavioral_code_dict):
 		df = df[df['valence'].notnull()]
 		print('	{} rows removed due to nan valence.'.format(len(df[df['valence'].isnull()])))
 	except:
+		pass
+
+	# experiments with novel stimuli only
+	df['fractal_chosen'] = df.apply(novel_fractal_exp, axis=1)
+
+	try:
+		df['fractal_count_in_block'] = fractal_in_block(df)
+	except:
+		print('   No fractal column found, skipping fractal count...')
 		pass
 
 	return df, session_obj

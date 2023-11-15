@@ -1,4 +1,5 @@
 import re
+import sys
 import numpy as np
 from tqdm.auto import tqdm
 from collections import defaultdict
@@ -26,14 +27,14 @@ def stimulus_parser(stimulus, stim_num, session_dict):
 		stimuli_type = stimulus['1'][...].tolist().decode()
 		stimuli_string = stimulus['2'][...].tolist().decode()
 		stimuli_name = stimuli_string.split('\\')[-1].split('.')[0]
-		if '_fix' in stimuli_name:
-			pass
-		else:
-			x_pos = stimulus['3'][...][0]
-			y_pos = stimulus['4'][...][0]
-			session_dict['stimuli_name_{}'.format(stim_num)].append(stimuli_name) # name
-			session_dict['x_{}_pos'.format(stim_num)].append(x_pos) # x-position
-			session_dict['y_{}_pos'.format(stim_num)].append(y_pos) # y-position
+		# if '_fix' in stimuli_name:
+		# 	pass
+		# else:
+		x_pos = stimulus['3'][...][0]
+		y_pos = stimulus['4'][...][0]
+		session_dict['stimuli_name_{}'.format(stim_num)].append(stimuli_name) # name
+		session_dict['x_{}_pos'.format(stim_num)].append(x_pos) # x-position
+		session_dict['y_{}_pos'.format(stim_num)].append(y_pos) # y-position
 	except:
 		pass
 	return session_dict
@@ -378,14 +379,21 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 			if field == 'fractal_index_chosen':
 				for trial in range(num_trials):
 					fractal_index_chosen = field_values[trial]
-					if fractal_index_chosen == 2:
-						fractal_name = session_dict['stimuli_name_1'][trial]
-						session_dict['fractal_chosen'].append(fractal_name)
-					elif fractal_index_chosen == 3:
-						fractal_name = session_dict['stimuli_name_2'][trial]
-						session_dict['fractal_chosen'].append(fractal_name)
-					else:
-						session_dict['fractal_chosen'].append('_error')
+					try:
+						if fractal_index_chosen == 2:
+							fractal_name = session_dict['stimuli_name_1'][trial]
+							session_dict['fractal_chosen'].append(fractal_name)
+						elif fractal_index_chosen == 3:
+							fractal_name = session_dict['stimuli_name_2'][trial]
+							session_dict['fractal_chosen'].append(fractal_name)
+						else:
+							session_dict['fractal_chosen'].append('_error')
+					except:
+						print(f'  Trial {trial} error: {field} parsing.')
+						print('    fractal_index_chosen: {}'.format(fractal_index_chosen))
+						print('    session_dict[stimuli_name_1]: {}'.format(len(session_dict['stimuli_name_1'])))
+						print('    session_dict[stimuli_name_2]: {}'.format(len(session_dict['stimuli_name_2'])))
+						sys.exit()
 			else:
 				session_dict[field] = field_values
 
@@ -396,6 +404,9 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		if key in ['date', 'subject']:
 			continue
 		try:
+			if len(session_dict[key]) == num_trials + 1:
+				# pop the last trial
+				session_dict[key].pop()
 			if len(session_dict[key]) != num_trials:
 				print('  {} removed from session_dict'.format(key))
 				print(f'    {len(session_dict[key])} trials in field != {num_trials} trials in session')

@@ -48,6 +48,7 @@ def image_diff(session_df, session_obj, path_obj, combine_dates):
     f, axes = plt.subplots(1, len(img_list)+1, sharey = False)
     
     # Fractal plot
+    print('  {} images found.'.format(len(img_list)))
     for i_index, img in enumerate(img_list):
       image_names.append(img.split('/')[-1].replace('.png', '').split('_')[-1])
       image = plt.imread(img)

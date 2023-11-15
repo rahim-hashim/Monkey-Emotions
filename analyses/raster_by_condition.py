@@ -96,8 +96,10 @@ def raster_by_condition(session_df, session_obj):
 
 	TRIAL_THRESHOLD = 10
 
+	# only reinforcement trials
+	session_df_reinforcement = session_df[session_df['reinforcement_trial'] == 1]
 	# only include trials after subject has seen fractal <TRIAL_THRESHOLD> number of times
-	session_df_count = session_df[session_df['fractal_count_in_block'] > TRIAL_THRESHOLD]
+	session_df_count = session_df_reinforcement[session_df_reinforcement['fractal_count_in_block'] > TRIAL_THRESHOLD]
 	# only include one switch (for now)
 	session_df_threshold = session_df_count[session_df_count['block'] <= 2]
 

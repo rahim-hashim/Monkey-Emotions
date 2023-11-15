@@ -24,8 +24,9 @@ def outcome_over_time(df, session_obj):
 	FIGURE_SAVE_PATH = session_obj.figure_path
 	avg_window = 10 # N trial rolling avg
 	f, axarr = plt.subplots(3, 1, sharey=False, figsize=(16, 11))
-	for v_index, valence in enumerate(sorted(df['valence'].unique(), reverse=True)):
-		df_valence = df[df['valence'] == valence]
+	df_reinforcement = df[df['reinforcement_trial'] == 1]
+	for v_index, valence in enumerate(sorted(df_reinforcement['valence'].unique(), reverse=True)):
+		df_valence = df_reinforcement[df_reinforcement['valence'] == valence]
 		lick_dict = defaultdict(lambda: defaultdict(list))
 		dem_dict = defaultdict(lambda: defaultdict(list))
 		blink_dict = defaultdict(lambda: defaultdict(list))	

@@ -78,10 +78,17 @@ class Session:
 
 	def parse_stim_labels(self):
 		"""Get the unique fractal labels for each session"""
-		unique_fractals = self.df['stimuli_name_1'].unique()
+		unique_fractals_all = self.df['stimuli_name_1'].unique()
 		# remove error label
-		unique_fractals = [fractal for fractal in unique_fractals if 'error' not in fractal]
-		self.stim_labels = sorted([fractal.split('_')[-1] for fractal in unique_fractals])
+		unique_fractals_alphanumeric = [fractal.split('_')[-1] for fractal in unique_fractals_all if 'error' not in fractal]
+		# for novel fractals experiment
+		unique_fractals = []
+		for fractal in unique_fractals_alphanumeric:
+			if fractal.isalpha():
+				unique_fractals.append(fractal)
+			elif fractal.isdigit() and 'E' not in unique_fractals:
+				unique_fractals.append('E')
+		self.stim_labels = sorted(unique_fractals)
 
 	def parse_valence_labels(self):
 		"""Parses valence labels based on the reward magnitude and airpuff magnitude"""
