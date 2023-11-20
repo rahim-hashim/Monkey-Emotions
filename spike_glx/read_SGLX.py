@@ -541,7 +541,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 
 	# loop through all trials
 	# use tqdm to show progress bar
-	for trial_index_specified in tqdm(range(len(df)), desc='Trial Number', position=0, leave=True):
+	for trial_index_specified in tqdm(range(len(df)-1), # fix the last trial (?)
+				desc='Trial Number', position=0, leave=True):
 
 		trial_specified = df.iloc[trial_index_specified]
 		ml_photodiode = trial_specified['photodiode']*1000 # V to mV

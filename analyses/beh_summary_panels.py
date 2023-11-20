@@ -3,9 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def valence_panels(session_df):
-  session_df_correct = session_df[session_df['reinforcement_trial'] == 1]
-  for valence in sorted(session_df_correct['valence'].unique()):
-    session_valence = session_df_correct[session_df_correct['valence'] == valence]
+  session_df_reinforcement = session_df[session_df['reinforcement_trial'] == 1]
+  for valence in sorted(session_df_reinforcement['valence'].unique()):
+    session_valence = session_df_reinforcement[session_df_reinforcement['valence'] == valence]
     # iterate through trials
     f, axarr = plt.subplots(3, 4, figsize=(10, 5))
     # empty matrix of zeros
@@ -90,3 +90,7 @@ def valence_panels(session_df):
     # reduce height of title
     f.tight_layout()
     plt.show()
+    print(f'Valence: {valence}')
+    print(f'  Lick CS: {round(np.mean(lick_matrix_cs_avg), 3)}')
+    print(f'  Lick Trace: {round(np.mean(lick_matrix_trace_avg), 3)}')
+    print(f'  Lick Outcome: {round(np.mean(lick_matrix_outcome_avg), 3)}')

@@ -20,6 +20,8 @@ from spike_glx import read_SGLX
 pd.options.mode.chained_assignment = None  # default='warn'
 pd.set_option('display.max_columns', None)
 
+PARSE_WM_FLAG = True
+DEEPLABCUT_FLAG = False
 
 ################## Parse ML Data ##################
 
@@ -85,47 +87,49 @@ spikeglx_obj = load_sglx(session_obj.df,
 
 ################## Parse White Matter Videos ##################
 
-from video.wm_videos import parse_wm_videos
+if PARSE_WM_FLAG:
+  from video.wm_videos import parse_wm_videos
 
-# Set epoch start and end times
-if session_obj.monkey == 'gandalf':
-  epoch_start = 'start'
-  epoch_end = 'end'
-else:
-  epoch_start = 'Trace Start'
-  epoch_end = 'Outcome Start'
+  # Set epoch start and end times
+  if session_obj.monkey == 'gandalf':
+    epoch_start = 'start'
+    epoch_end = 'end'
+  else:
+    epoch_start = 'Trace Start'
+    epoch_end = 'Outcome Start'
 
-kwargs = {'spikeglx_obj': spikeglx_obj,       # 'spikeglx_obj': spikeglx_obj
-          'session_obj': session_obj,         # 'session_obj': session_obj
-          'trial_start': 0,                   # 'trial_start': 0 
-          'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
-          'epoch_start': epoch_start,         # 'epoch_start': 'start'
-          'epoch_end': epoch_end,             # 'epoch_end': 'end'   
-          'thread_flag': False}               # 'thread_flag': False
+  kwargs = {'spikeglx_obj': spikeglx_obj,       # 'spikeglx_obj': spikeglx_obj
+            'session_obj': session_obj,         # 'session_obj': session_obj
+            'trial_start': 0,                   # 'trial_start': 0 
+            'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
+            'epoch_start': epoch_start,         # 'epoch_start': 'start'
+            'epoch_end': epoch_end,             # 'epoch_end': 'end'   
+            'thread_flag': False}               # 'thread_flag': False
 
-parse_wm_videos(**kwargs)
+  parse_wm_videos(**kwargs)
 
 ################## DeepLabCut Processing ##################
-import deeplabcut
-# Custom modules
-from dlc_primate.dlc_utils import dlc_config, dlc_downsample
+if DEEPLABCUT_FLAG:
+  import deeplabcut
+  # Custom modules
+  from dlc_primate.dlc_utils import dlc_config, dlc_downsample
 
-# Manually assigned from White Matter videos
-camera_dict = {
-  'e3v8360':'face_1', 
-  'e3v83d6':'face_2',
-  'e3v83ad':'body_1',
-  'e3v831b':'body_2'
-}
+  # Manually assigned from White Matter videos
+  camera_dict = {
+    'e3v8360':'face_1', 
+    'e3v83d6':'face_2',
+    'e3v83ad':'body_1',
+    'e3v831b':'body_2'
+  }
 
-# Get list of videos
-video_dir = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
-dlc_video_path_dict = dlc_config.get_trial_video_list(video_dir, camera_dict)
+  # Get list of videos
+  video_dir = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
+  dlc_video_path_dict = dlc_config.get_trial_video_list(video_dir, camera_dict)
 
-# Initialize DLC project
-config_path_dict, train_config_path_dict = \
-  dlc_config.dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict)
+  # Initialize DLC project
+  config_path_dict, train_config_path_dict = \
+    dlc_config.dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict)
 
-# Run DLC
-dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, 
-                   start_video=0, end_video=10, videotype='mp4')
+  # Run DLC
+  dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, 
+                    start_video=0, end_video=10, videotype='mp4')

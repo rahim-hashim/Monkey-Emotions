@@ -11,10 +11,10 @@ echo "Target path is:"
 echo "  $target_path"
 
 # set monkey variable to Aragorn
-monkey="Aragorn"
+monkey="Bear"
 # set date variable to todays date (i.e. YYMMDD)
 # date_str=$(date +%y%m%d)
-date_str='231114'
+date_str='231120'
 if [ -z "$monkey" ]; then
   echo "Searching for all monkeys for $date_str"
 else
@@ -44,10 +44,16 @@ if [ ${#file_array[@]} -eq 0 ]; then
   echo "  No files found"
 else
   for file_name in "${file_array[@]}"; do
-    echo "  Moving : $file_name"
+    echo "  Copying : $file_name"
     # move the data file to the target path
-    mv $file_name $target_path
-    echo "  Moved  : $file_name"
+    cp $file_name $target_path
+    # see if the file was copied
+    if [ -f "$target_path/$file_name" ]; then
+      echo "  Copied  : $file_name"
+      # delete the file from the current directory
+      rm $file_name
+      echo "  Deleted : $file_name"
+    fi
     done
 fi
 # print total number of files moved

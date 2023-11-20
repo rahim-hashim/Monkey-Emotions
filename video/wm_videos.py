@@ -11,10 +11,22 @@ from threading import Thread
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from collections import defaultdict
+from IPython.display import clear_output
 # Custom classes
 from classes import FaceLandmarks
 # Custom functions
 # from analyses.eye_capture import frame_eye_capture
+
+def notebook_check():
+	# see if environment is notebook
+	try:
+		shell = get_ipython().__class__.__name__
+		if shell == 'ZMQInteractiveShell':
+			notebook_flag = True
+	except NameError:
+		notebook_flag = False
+	return notebook_flag
+
 
 def make_video(frames, frame_rate, frame_size, video_name):
 	fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -78,6 +90,7 @@ def spikeglx_frames(video_path, session_obj, video_dict, target_path, trial_num,
 		frame_range = range(frame_start, frame_end)
 	else:
 		frame_range = tqdm(range(frame_start, frame_end), desc=f'Cam: {cam} | Trial: {trial_num} | Frames: {frame_start}-{frame_end}')
+		clear_output(wait=True)
 	for frame_num in frame_range:
 		cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
 		success, frame = cap.read()
@@ -352,7 +365,8 @@ def wm_video_parsing(df, session_obj, trial_specified=None):
 		if v_index > 5:
 				break
 
-def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path, epoch_start='start', epoch_end='end', thread_flag=False):
+def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path, 
+									 epoch_start='start', epoch_end='end', thread_flag=False):
 	"""
 	Takes in spikeglx_obj and parses videos for a given trial
 	
@@ -427,7 +441,7 @@ def parse_wm_videos(spikeglx_obj,
 	# get frames
 	video_file_paths = spikeglx_obj.video_file_paths
 	video_info = spikeglx_obj.video_info
-	trial_subset = list(range(trial_start, trial_end)) # last trial usually drops save signal so excluded
+	trial_subset = list(range(trial_start, trial_end-1)) # last trial usually drops save signal so excluded
 	video_dict = defaultdict(list)
 	target_path = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
 	print('Parsing Trials for Videos: {} - {}'.format(trial_start, trial_end))
