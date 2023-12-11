@@ -549,7 +549,11 @@ def add_fields(df, session_obj, behavioral_code_dict):
 		pass
 
 	# experiments with novel stimuli only
-	df['fractal_chosen'] = df.apply(novel_fractal_exp, axis=1)
+	try:
+		df['fractal_chosen'] = df.apply(novel_fractal_exp, axis=1)
+	except:
+		print('   No novel fractal column found, skipping novel fractal...')
+		pass
 
 	try:
 		df['fractal_count_in_block'] = fractal_in_block(df)

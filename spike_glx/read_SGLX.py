@@ -209,13 +209,16 @@ def plot_channels_raw(spikeglx_obj, meta, chan_dict, signal_dict, tStart=0, tEnd
 		# Plot the first of the extracted channels
 		tDat = np.arange(firstSamp, lastSamp+1)
 		tDat = 1000*tDat/sRate      # plot time axis in msec
-		print(f' Channel [{chan}]: {signal_dict[chan]}')
-		print(f'  Max Val: {round(max(convData), 3)}')
-		print(f'  Min Val: {round(min(convData), 3)}')
-		ax.plot(tDat, convData, label=signal_dict[chan])
-		ax.set_xlabel('Time (ms)')
-		ax.set_ylabel('Voltage (mV)')
-		chan_dict_corrected[chan] = convData
+		try:
+			print(f' Channel [{chan}]: {signal_dict[chan]}')
+			print(f'  Max Val: {round(max(convData), 3)}')
+			print(f'  Min Val: {round(min(convData), 3)}')
+			ax.plot(tDat, convData, label=signal_dict[chan])
+			ax.set_xlabel('Time (ms)')
+			ax.set_ylabel('Voltage (mV)')
+			chan_dict_corrected[chan] = convData
+		except:
+			print(f' Channel [{chan}]: empty')
 	# make small legend outside the plot
 	ax.legend(loc='center right', bbox_to_anchor=(1.25, 0.5))
 	ax.set_yticks(np.arange(0, 6000, 1000))
@@ -641,13 +644,14 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 					max_corr[0] = start_shift
 					max_corr[1] = corr
 				# print(f'  Trial {trial_index_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
-				if corr > CORR_THRESHOLD:
-					low_corr_flag = False
-					print(f'  Photodiode aligned. Correlation: {round(corr, 3)} | Shift: {pre_trial_shift+start_shift}')
 				# stop at a full 5 second shift after the end of the previous trial
-				elif start_shift > 5000:
-					print(f'  Trial correlation never corrected above {CORR_THRESHOLD}. Check alignment.')
-					print(f'    Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
+				elif (start_shift > 5000):
+					if corr < CORR_THRESHOLD:
+						print(f'  Trial correlation never corrected above {CORR_THRESHOLD}. Check alignment.')
+						print(f'    Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
+					if corr >= CORR_THRESHOLD:
+						low_corr_flag = False
+						print(f'  Photodiode aligned. Correlation: {round(corr, 3)} | Shift: {pre_trial_shift+start_shift}')
 					break
 			# set sglx_trial_start to the best shift
 			sglx_trial_start = sglx_trial_start_approx + max_corr[0]

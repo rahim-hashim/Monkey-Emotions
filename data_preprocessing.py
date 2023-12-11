@@ -21,7 +21,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 pd.set_option('display.max_columns', None)
 
 PARSE_WM_FLAG = True
-DEEPLABCUT_FLAG = False
+DEEPLABCUT_FLAG = True
 
 ################## Parse ML Data ##################
 
@@ -72,7 +72,6 @@ print('Epochs:')
 # Print each epoch on its own line
 for epoch in epochs:
   print(f'  {epoch}')
-
 
 # Parse SpikeGLX data and segment White Matter videos by trial
 from spike_glx.load_SGLX import load_sglx
@@ -132,4 +131,4 @@ if DEEPLABCUT_FLAG:
 
   # Run DLC
   dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, 
-                    start_video=0, end_video=10, videotype='mp4')
+                    start_video=0, end_video=None, videotype='mp4')
