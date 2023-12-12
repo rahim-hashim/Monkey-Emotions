@@ -449,6 +449,7 @@ def parse_wm_videos(spikeglx_obj,
 	print('  Epoch End: {}'.format(epoch_end))
 	sglx_cam_framenumbers_subset = {k: spikeglx_obj.cam_framenumbers[k] for k in trial_subset}
 	# threading for faster parsing
+	### USE JOBLIB INSTEAD
 	if thread_flag:
 		threads = []
 		for trial_num in sglx_cam_framenumbers_subset.keys():
@@ -460,6 +461,7 @@ def parse_wm_videos(spikeglx_obj,
 	else:
 		for trial_num in sglx_cam_framenumbers_subset.keys():
 			parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path, epoch_start, epoch_end, thread_flag)
+	###
 	print('Video Parsing Complete.')
 	print('  Missing Videos: {}'.format(spikeglx_obj.trial_missing_videos))
 

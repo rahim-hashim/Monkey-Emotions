@@ -99,7 +99,7 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		session_dict['session_num'] = int(0)
 
 	# monkey
-	session_dict['subject'] = monkey_input
+	session_dict['subject'] = monkey_input.lower()
 	
 	# error code mapping
 	error_dict = defaultdict(str)

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from pprint import pprint
 from tqdm.auto import tqdm
+import shutil
 import matplotlib.pyplot as plt
 # Custom classes
 from classes.Session import Session
@@ -23,7 +24,7 @@ def generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start,
 		epoch_end = len(trial_specified['eye_x'].tolist()[0])
 	else:
 		epoch_end = trial_specified[epoch_end].tolist()[0]
-	print('Generating frames for trial {} from {} to {}'.format(trial_num, epoch_start, epoch_end))
+	print('  Frames {} to {}'.format(trial_num, epoch_start, epoch_end))
 	eye_x = trial_specified['eye_x'].tolist()[0][epoch_start:epoch_end]
 	eye_y = trial_specified['eye_y'].tolist()[0][epoch_start:epoch_end]
 	lick = trial_specified['lick'].tolist()[0][epoch_start:epoch_end]
@@ -92,4 +93,4 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start,
 			out.write(img)
 	# delete image folder
 	print('Deleting image folder: {}'.format(source_folder_path))
-	os.rmdir(source_folder_path, recursive=True)
+	shutil.rmtree(source_folder_path)

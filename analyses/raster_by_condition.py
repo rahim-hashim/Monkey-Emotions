@@ -94,7 +94,7 @@ def raster_by_condition(session_df, session_obj):
 	f, axarr = plt.subplots(3,3, gridspec_kw=gs_kw, sharey = False, figsize=(50,20))
 	num_fractals = len(session_df['valence'].unique())	
 
-	TRIAL_THRESHOLD = 10
+	TRIAL_THRESHOLD = 3
 
 	# only reinforcement trials
 	session_df_reinforcement = session_df[session_df['reinforcement_trial'] == 1]
