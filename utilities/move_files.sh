@@ -10,11 +10,25 @@ target_path="data_Probabilistic_Reward_Airpuff_Generalization"
 echo "Target path is:"
 echo "  $target_path"
 
-# set monkey variable to Aragorn
-monkey="Aragorn"
+# parse arguments
+## argument 1 = monkey
+## argument 2 = date
+if [ $# -eq 0 ]; then
+  echo "No arguments provided"
+  date_str=$(date +%y%m%d)
+elif [ $# -eq 1 ]; then
+  monkey=$1
+  date_str=$(date +%y%m%d)
+elif [ $# -eq 2 ]; then
+  monkey=$1
+  date_str=$2
+else
+  echo "Too many arguments provided"
+  echo "  Exiting"
+  exit
+fi
+
 # set date variable to todays date (i.e. YYMMDD)
-# date_str=$(date +%y%m%d)
-date_str='231212'
 if [ -z "$monkey" ]; then
   echo "Searching for all monkeys for $date_str"
 else
