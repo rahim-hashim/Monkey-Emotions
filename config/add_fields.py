@@ -395,30 +395,39 @@ def eye_distance(trial, session_obj):
 	return cumulative_distance
 
 def cam_frame_counter(trial):
-  """
-  Finds the leading edge of the analog cam_save and cam_sync signals
-  and returns when they are both high.
+	"""
+	Finds the leading edge of the analog cam_save and cam_sync signals
+	and returns when they are both high.
 
-  Parameters
-  ----------
-  trial : pd.Series
-    Trial row from session_df
+	Parameters
+	----------
+	trial : pd.Series
+		Trial row from session_df
 
-  Returns
-  -------
-  frame_timings : list
-    List of frame timings in which the cam_save and cam_sync signal is high
-  """
-  # count the number of times the value goes from <3 to greater than 3
-  frame_timings = []
-  trial_num = trial['trial_num']
-  cam_save = trial['cam_save']
-  cam_sync = trial['cam_sync']
-  # find the leading edge of the cam_sync and cam_save signal
-  frame_timings = [i for i in range(1, len(cam_sync)) if cam_sync[i] > 3 and cam_sync[i-1] < 3 and cam_save[i] > 3]
-  # print(trial_num, len(frame_timings), len(trial['cam_sync']), 
-  #   'frame rate: {}'.format(round(len(frame_timings)/len(trial['cam_sync']), 3)*1000))
-  return frame_timings
+	Returns
+	-------
+	frame_timings : list
+		List of frame timings in which the cam_save and cam_sync signal is high
+	"""
+	# count the number of times the value goes from <3 to greater than 3
+	frame_timings = []
+	trial_num = trial['trial_num']
+	cam_save = trial['cam_save']
+	cam_sync = trial['cam_sync']
+	# find the leading edge of the cam_sync and cam_save signal
+	## bizarre use-case when cam_save only went high for 1 frame
+	# if trial_num == 1:
+	# 	cam_save_flag = False
+	# 	for i in range(1, len(cam_sync)):
+	# 		if (cam_sync[i] > 3) and (cam_sync[i-1] < 3) and (cam_save_flag == True or cam_save[i] > 3):
+	# 			frame_timings.append(i)
+	# 			cam_save_flag = True
+	# else:
+	# 	frame_timings = [i for i in range(1, len(cam_sync)) if cam_sync[i] > 3 and cam_sync[i-1] < 3]
+	frame_timings = [i for i in range(1, len(cam_sync)) if cam_sync[i] > 3 and cam_sync[i-1] < 3 and cam_save[i] > 3]
+	# print(trial_num, len(frame_timings), len(trial['cam_sync']), 
+	#   'frame rate: {}'.format(round(len(frame_timings)/len(trial['cam_sync']), 3)*1000))
+	return frame_timings
 
 def prelim_behavior_analysis(df, session_obj, behavioral_code_dict):
 	# total lick rate

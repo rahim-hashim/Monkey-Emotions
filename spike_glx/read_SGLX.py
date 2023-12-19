@@ -646,12 +646,12 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				# print(f'  Trial {trial_index_specified} Shift {sglx_trial_start} | Correlation: {round(corr, 3)}')
 				# stop at a full 5 second shift after the end of the previous trial
 				elif (start_shift > 5000):
-					if corr < CORR_THRESHOLD:
+					if max_corr[1] < CORR_THRESHOLD:
 						print(f'  Trial correlation never corrected above {CORR_THRESHOLD}. Check alignment.')
 						print(f'    Max Correlation: Shift {max_corr[0]} | Correlation: {max_corr[1]}')
-					if corr >= CORR_THRESHOLD:
+					if max_corr[1] >= CORR_THRESHOLD:
 						low_corr_flag = False
-						print(f'  Photodiode aligned. Correlation: {round(corr, 3)} | Shift: {pre_trial_shift+start_shift}')
+						print(f'  Photodiode aligned. Correlation: {round(max_corr[1], 3)} | Shift: {pre_trial_shift+max_corr[0]}')
 					break
 			# set sglx_trial_start to the best shift
 			sglx_trial_start = sglx_trial_start_approx + max_corr[0]

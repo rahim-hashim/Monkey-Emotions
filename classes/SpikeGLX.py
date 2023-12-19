@@ -123,6 +123,7 @@ class SpikeGLX:
     print(f'Looking for binary file in {self.sglx_file_path}')
     monkey_name = self.monkey_name.lower()
     date = '20' + self.date
+    spikeglx_folder = None
     # find all folders in raw data path folder with <monkey_name>_date_g<any_int> format
     for folder in os.listdir(self.sglx_file_path):
       if re.match(monkey_name + '_' + date + '_g\d+', folder):
@@ -130,7 +131,11 @@ class SpikeGLX:
         break
     spikeglx_bin = None
     spikeglx_meta = None
-    print(f'Found folder: {spikeglx_folder}')
+    if spikeglx_folder:
+      print(f'Found folder: {spikeglx_folder}')
+    else:
+      print(f'No folder found for {monkey_name}_{date}')
+      print('  Please check that the folder name is correct and that the folder is in the correct path')
     # find .bin file
     for file in os.listdir(os.path.join(self.sglx_file_path, spikeglx_folder)):
       if file.endswith('.bin'):

@@ -20,115 +20,117 @@ from spike_glx import read_SGLX
 pd.options.mode.chained_assignment = None  # default='warn'
 pd.set_option('display.max_columns', None)
 
-PARSE_WM_FLAG = True
-DEEPLABCUT_FLAG = True
+def data_preprocessing():
 
-################## Parse ML Data ##################
+  PARSE_WM_FLAG = True
+  DEEPLABCUT_FLAG = True
 
-# Set ROOT_DIR as default directory to select files
-ROOT_DIR = '/Users/rahimhashim/My Drive/Columbia/Salzman/Monkey-Training/tasks'
-file_container_obj = FileContainer(ROOT_DIR)
+  ################## Parse ML Data ##################
 
-# Convert ML .h5 file to pandas dataframe
-session_obj, error_dict, behavioral_code_dict = file_container_obj.ml_to_pd()
+  # Set ROOT_DIR as default directory to select files
+  ROOT_DIR = '/Users/rahimhashim/My Drive/Columbia/Salzman/Monkey-Training/tasks'
+  file_container_obj = FileContainer(ROOT_DIR)
 
-# Re-assign and recreate new fields if Gandalf session
-from config.add_fields import add_fields
-# save is lick
-# lick is photodiode
-# photodiode is save
-if session_obj.monkey == 'gandalf':
-  session_obj.df['cam_save_2'] = session_obj.df['cam_save'].copy()
-  session_obj.df['cam_sync_2'] = session_obj.df['cam_sync'].copy()
-  session_obj.df['cam_sync'] = session_obj.df['lick'].copy() # correct
-  session_obj.df['cam_save'] = session_obj.df['cam_sync_2'].copy()
-  session_obj.df['lick'] = session_obj.df['cam_save_2'].copy()
-  del session_obj.df['cam_sync_2']
-  del session_obj.df['cam_save_2']
+  # Convert ML .h5 file to pandas dataframe
+  session_obj, error_dict, behavioral_code_dict = file_container_obj.ml_to_pd()
 
-  session_obj.df, session_obj = \
-  add_fields(session_obj.df, session_obj, behavioral_code_dict)
-
-################## Parse SpikeGLX Data ##################
-
-# Manually assign the signal channel numbers
-# from how you set them up on the NI PXIe-6341 board
-signal_dict = {
-  0: 'cam_sync',
-  1: 'cam_save',
-  2: 'lick',
-  3: 'photodiode',
-  4: 'empty'
-}
-
-# Manually assign the time epochs you care about
-# which have to exist as rows in session_df
-if session_obj.monkey in ['aragorn', 'bear']:
-  epochs = ['Start Trial', 'Fixation On', 'CS On',	
-          'Trace Start', 'Outcome Start', 'End Trial']
-else:
-  epochs = ['Start trial', 'End trial']
-print('Epochs:')
-# Print each epoch on its own line
-for epoch in epochs:
-  print(f'  {epoch}')
-
-# Parse SpikeGLX data and segment White Matter videos by trial
-from spike_glx.load_SGLX import load_sglx
-
-# Load the spikeglx object
-spikeglx_obj = load_sglx(session_obj.df, 
-                         session_obj, 
-                         file_container_obj, 
-                         signal_dict, 
-                         epochs)
-
-
-################## Parse White Matter Videos ##################
-
-if PARSE_WM_FLAG:
-  from video.wm_videos import parse_wm_videos
-
-  # Set epoch start and end times
+  # Re-assign and recreate new fields if Gandalf session
+  from config.add_fields import add_fields
+  # save is lick
+  # lick is photodiode
+  # photodiode is save
   if session_obj.monkey == 'gandalf':
-    epoch_start = 'start'
-    epoch_end = 'end'
-  else:
-    epoch_start = 'Trace Start'
-    epoch_end = 'Outcome Start'
+    session_obj.df['cam_save_2'] = session_obj.df['cam_save'].copy()
+    session_obj.df['cam_sync_2'] = session_obj.df['cam_sync'].copy()
+    session_obj.df['cam_sync'] = session_obj.df['lick'].copy() # correct
+    session_obj.df['cam_save'] = session_obj.df['cam_sync_2'].copy()
+    session_obj.df['lick'] = session_obj.df['cam_save_2'].copy()
+    del session_obj.df['cam_sync_2']
+    del session_obj.df['cam_save_2']
 
-  kwargs = {'spikeglx_obj': spikeglx_obj,       # 'spikeglx_obj': spikeglx_obj
-            'session_obj': session_obj,         # 'session_obj': session_obj
-            'trial_start': 0,                   # 'trial_start': 0 
-            'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
-            'epoch_start': epoch_start,         # 'epoch_start': 'start'
-            'epoch_end': epoch_end,             # 'epoch_end': 'end'   
-            'thread_flag': False}               # 'thread_flag': False
+    session_obj.df, session_obj = \
+    add_fields(session_obj.df, session_obj, behavioral_code_dict)
 
-  parse_wm_videos(**kwargs)
+  ################## Parse SpikeGLX Data ##################
 
-################## DeepLabCut Processing ##################
-if DEEPLABCUT_FLAG:
-  import deeplabcut
-  # Custom modules
-  from dlc_primate.dlc_utils import dlc_config, dlc_downsample
-
-  # Manually assigned from White Matter videos
-  camera_dict = {
-    'e3v8360':'face_1', 
-    'e3v83d6':'face_2',
-    'e3v83ad':'body_1',
-    'e3v831b':'body_2'
+  # Manually assign the signal channel numbers
+  # from how you set them up on the NI PXIe-6341 board
+  signal_dict = {
+    0: 'cam_sync',
+    1: 'cam_save',
+    2: 'lick',
+    3: 'photodiode',
+    4: 'empty'
   }
 
-  # Get list of videos
-  video_dir = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
-  dlc_video_path_dict = dlc_config.get_trial_video_list(video_dir, camera_dict)
+  # Manually assign the time epochs you care about
+  # which have to exist as rows in session_df
+  if session_obj.monkey in ['aragorn', 'bear']:
+    epochs = ['Start Trial', 'Fixation On', 'CS On',	
+            'Trace Start', 'Outcome Start', 'End Trial']
+  else:
+    epochs = ['Start trial', 'End trial']
+  print('Epochs:')
+  # Print each epoch on its own line
+  for epoch in epochs:
+    print(f'  {epoch}')
 
-  # Initialize DLC project
-  config_path_dict, train_config_path_dict = \
-    dlc_config.dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict)
+  # Parse SpikeGLX data and segment White Matter videos by trial
+  from spike_glx.load_SGLX import load_sglx
 
-  # Run DLC
-  dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, 
-                    start_video=0, end_video=None, videotype='mp4')
+  # Load the spikeglx object
+  spikeglx_obj = load_sglx(session_obj.df, 
+                          session_obj, 
+                          file_container_obj, 
+                          signal_dict, 
+                          epochs)
+
+
+  ################## Parse White Matter Videos ##################
+
+  if PARSE_WM_FLAG:
+    from video.wm_videos import parse_wm_videos
+
+    # Set epoch start and end times
+    if session_obj.monkey == 'gandalf':
+      epoch_start = 'start'
+      epoch_end = 'end'
+    else:
+      epoch_start = 'Trace Start'
+      epoch_end = 'Outcome Start'
+
+    kwargs = {'spikeglx_obj': spikeglx_obj,       # 'spikeglx_obj': spikeglx_obj
+              'session_obj': session_obj,         # 'session_obj': session_obj
+              'trial_start': 0,                   # 'trial_start': 0 
+              'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
+              'epoch_start': epoch_start,         # 'epoch_start': 'start'
+              'epoch_end': epoch_end,             # 'epoch_end': 'end'   
+              'thread_flag': False}               # 'thread_flag': False
+
+    parse_wm_videos(**kwargs)
+
+  ################## DeepLabCut Processing ##################
+  if DEEPLABCUT_FLAG:
+    import deeplabcut
+    # Custom modules
+    from dlc_primate.dlc_utils import dlc_config, dlc_downsample
+
+    # Manually assigned from White Matter videos
+    camera_dict = {
+      'e3v8360':'face_1', 
+      'e3v83d6':'face_2',
+      'e3v83ad':'body_1',
+      'e3v831b':'body_2'
+    }
+
+    # Get list of videos
+    video_dir = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
+    dlc_video_path_dict = dlc_config.get_trial_video_list(video_dir, camera_dict)
+
+    # Initialize DLC project
+    config_path_dict, train_config_path_dict = \
+      dlc_config.dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict)
+
+    # Run DLC
+    dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, 
+                      start_video=0, end_video=None, videotype='mp4')
