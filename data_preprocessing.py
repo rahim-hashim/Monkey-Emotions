@@ -22,14 +22,16 @@ pd.set_option('display.max_columns', None)
 
 def data_preprocessing():
 
-  PARSE_WM_FLAG = True
-  DEEPLABCUT_FLAG = True
+  PARSE_WM_FLAG = True    # True if you want to parse White Matter videos
+  DEEPLABCUT_FLAG = True  # True if you want to run DLC
+  MONKEY = 'gandalf'      # 'gandalf', 'aragorn', 'bear'
+  DATE = '20231220'       # YYYYMMDD
 
   ################## Parse ML Data ##################
 
   # Set ROOT_DIR as default directory to select files
-  ROOT_DIR = '/Users/rahimhashim/My Drive/Columbia/Salzman/Monkey-Training/tasks'
-  file_container_obj = FileContainer(ROOT_DIR)
+  ROOT_DIR = os.path.join('..', 'Rob')
+  file_container_obj = FileContainer(ROOT_DIR, MONKEY, DATE)
 
   # Convert ML .h5 file to pandas dataframe
   session_obj, error_dict, behavioral_code_dict = file_container_obj.ml_to_pd()
@@ -134,3 +136,7 @@ def data_preprocessing():
     # Run DLC
     dlc_config.dlc_run(config_path_dict, dlc_video_path_dict, 
                       start_video=0, end_video=None, videotype='mp4')
+    
+# run the script
+if __name__ == '__main__':
+  data_preprocessing()
