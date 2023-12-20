@@ -225,7 +225,7 @@ def plot_channels_raw(spikeglx_obj, meta, chan_dict, signal_dict, tStart=0, tEnd
 	ax.set_ylim(0, 5500)
 	plt.title('Raw SpikeGLX NI Channels')
 	plt.tight_layout()
-	plt.show()
+	plt.show(block=False)
 
 def read_SGLX():
 	"""
@@ -327,7 +327,7 @@ def plot_trial_0(session_df, spikeglx_obj):
 	axarr[2].set_title('SpikeGLX End of Trial 1')
 
 	plt.tight_layout()
-	plt.show()
+	plt.show(block=False)
 
 
 def plot_analog_ML(df, epochs, trial_num=1):
@@ -358,7 +358,7 @@ def plot_analog_ML(df, epochs, trial_num=1):
 	# raise title 
 	ax.set_title(f'Trial Number: {trial_num}', fontsize=10, y=1.15)
 	plt.legend()
-	plt.show()
+	plt.show(block=False)
 
 def ml_check_save_low(trial):
 	# check if save signal is low for the entire trial
@@ -468,7 +468,7 @@ def plot_pd_alignment(trial_specified, sglx_pd_times, sglx_pd_signal,
 	plt.subplots_adjust(top=0.8)
 	# legend outside of plot
 	plt.legend(bbox_to_anchor=(1, 1.25), loc='upper left', borderaxespad=0.)
-	plt.show()
+	plt.show(block=False)
 	# bold print statements
 	print(f'Trial {trial_num}:')
 	# align all the vertical lines for printing
@@ -508,7 +508,7 @@ def plot_spikeglx_ml_corr(correlation_matrix, corr_row_len):
 	plt.title('Correlation between ML and SpikeGLX Photodiode Signals')
 	plt.xlabel('Trial Number')
 	plt.ylabel('Trial Number (hundreds)')
-	plt.show()
+	plt.show(block=False)
 
 def align_sglx_ml(spikeglx_obj, df, epochs):
 	"""
@@ -695,7 +695,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	spikeglx_obj.cam_framenumbers = sglx_cam_framenumbers
 	# flatten correlation matrix
 	spikeglx_obj.ml_sglx_corr_matrix = correlation_matrix.flatten()
-
+	plt.show()
 	return spikeglx_obj
 
 # get length of all cam_frames

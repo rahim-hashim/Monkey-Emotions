@@ -15,15 +15,15 @@ from classes.Session import Session
 
 
 class FileContainer:
-	def __init__(self, ROOT_DIR, MONKEY=None, DATE=None):
+	def __init__(self, ROOT_DIR, VIDEO_DIR, MONKEY=None, DATE=None):
 		self.ml_file_path = None
 		self.white_matter_dir_path = None
 		self.spikeglx_dir_path = None
 		self.monkey_name = {}
 		self.date = {}
-		self.find_files(ROOT_DIR, MONKEY, DATE)
+		self.find_files(ROOT_DIR, VIDEO_DIR, MONKEY, DATE)
 
-	def find_files(self, ROOT_DIR=None, MONKEY=None, DATE=None):
+	def find_files(self, ROOT_DIR=None, VIDEO_DIR=None, MONKEY=None, DATE=None):
 		"""
 		Load behavior, video, and spikeglx files
 		"""
@@ -33,9 +33,11 @@ class FileContainer:
 			root_path = '/Users/rahimhashim/My Drive/Columbia/Salzman/Monkey-Training/tasks/rhAirpuff'
 		else:
 			root_path = ROOT_DIR
+		
+		video_path = VIDEO_DIR
 
 		beh_file_path = None	# <ROOT>/<MONKEY>_<DATE>_g<#>_<TASK>.h5
-		video_dir_path = None	# <ROOT>/<MONKEY>_<DATE>
+		video_dir_path = None	# <VIDEO_DIR>/<MONKEY>_<DATE>
 		sglx_dir_path = None	# <ROOT>/<MONKEY>_<DATE>_g<#>
 		tkinter_flag = False	# flag to check if tkinter window is open
 
@@ -45,7 +47,7 @@ class FileContainer:
 			session_folder = [folder for folder in os.listdir(root_path) if MONKEY in folder and DATE in folder][0]
 			print(f'Session folder {session_folder} found in default location: {ROOT_DIR}')
 			# look for behavior file
-			beh_file_list = [file for file in os.listdir(os.path.join(root_path, session_folder)) if file.endswith('.bhv2') or file.endswith('.h5')]
+			beh_file_list = [file for file in os.listdir(os.path.join(root_path, session_folder)) if file.endswith('.h5')]
 			if len(beh_file_list) == 0:
 				print('  WARNING: no behavior files found.')
 			elif len(beh_file_list) == 1:
@@ -57,11 +59,11 @@ class FileContainer:
 				beh_file_path = os.path.join(root_path, session_folder, beh_file_list[0])
 				print('    Selecting first file: {}'.format(beh_file_path))
 			# look for video files
-			video_dir_list = [folder for folder in os.listdir(os.path.join(root_path, session_folder)) if folder.endswith('White Matter')]
+			video_dir_list = [folder for folder in os.listdir(video_path) if (DATE[2:] in folder and MONKEY.capitalize() in folder)]
 			if len(video_dir_list) == 0:
 				print('  WARNING: no White Matter video files found.')
 			elif len(video_dir_list) == 1:
-				video_dir_path = os.path.join(root_path, session_folder, video_dir_list[0])
+				video_dir_path = os.path.join(video_path, video_dir_list[0])
 				print('  White Matter video files found: {}'.format(video_dir_path))
 			else:
 				print('  WARNING: more than one White Matter video files found.')
@@ -69,17 +71,13 @@ class FileContainer:
 				video_dir_path = os.path.join(root_path, session_folder, video_dir_list[0])
 				print('    Selecting first directory: {}'.format(video_dir_path))
 			# look for spikeglx files (ends in g0, g1...) using regex
-			sglx_dir_list = [folder for folder in os.listdir(os.path.join(root_path, session_folder)) if re.search('g\d', folder)]
-			if len(sglx_dir_list) == 0:
+			if re.search('g\d', session_folder) is not None and \
+										len([file for file in os.listdir(os.path.join(root_path, session_folder)) if file.endswith('.bin')]) != 0:
+				sglx_dir_path = os.path.join(root_path, session_folder)
 				print('  WARNING: no SpikeGLX files found.')
-			elif len(sglx_dir_list) == 1:
-				sglx_dir_path = os.path.join(root_path, session_folder, sglx_dir_list[0])
-				print('  SpikeGLX files found: {}'.format(sglx_dir_path))
 			else:
-				print('  WARNING: more than one SpikeGLX files found.')
-				print('  {}'.format(sglx_dir_list))
-				sglx_dir_path = os.path.join(root_path, session_folder, sglx_dir_list[0])
-				print('    Selecting first directory: {}'.format(sglx_dir_path))
+				print('  WARNING: no SpikeGLX files found.')
+				print('  {}'.format(os.path.join(root_path, session_folder)))
 		except:
 			print('Session folder not found.')
 			print('Select behavior, video, and SpikeGLX files manually.')
@@ -93,10 +91,11 @@ class FileContainer:
 			
 		if beh_file_path is None:
 			# load behavior file
-			print(f'  Select .bhv2/.h5 behavior file (i.e. {DATE}_{MONKEY}_choice.h5)')
-			beh_file_path = askopenfilename(title='Select .bhv2 or .h5 behavior file', 
+			print(f'  Select .h5 behavior file (i.e. {DATE}_{MONKEY}_choice.h5)')
+			beh_file_path = askopenfilename(title='Select .h5 behavior file', 
 																			filetypes=[('.h5 files', '.h5'),
-																								('bhv2 files', '.bhv2')],
+																								#('bhv2 files', '.bhv2')
+																								],
 																			initialdir=root_path) 
 
 		if video_dir_path is None:

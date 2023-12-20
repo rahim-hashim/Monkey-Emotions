@@ -29,9 +29,10 @@ def data_preprocessing():
 
   ################## Parse ML Data ##################
 
-  # Set ROOT_DIR as default directory to select files
-  ROOT_DIR = os.path.join('..', 'Rob')
-  file_container_obj = FileContainer(ROOT_DIR, MONKEY, DATE)
+  # Set DATA_DIR as default directory to select files
+  DATA_DIR = 'C:\\Users\\rober\\SynologyDrive\Rob'
+  VIDEO_DIR = 'C:\\Users\\rober\\Desktop\\rhAirpuff\\videos'
+  file_container_obj = FileContainer(DATA_DIR, VIDEO_DIR, MONKEY, DATE)
 
   # Convert ML .h5 file to pandas dataframe
   session_obj, error_dict, behavioral_code_dict = file_container_obj.ml_to_pd()
@@ -107,7 +108,7 @@ def data_preprocessing():
               'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
               'epoch_start': epoch_start,         # 'epoch_start': 'start'
               'epoch_end': epoch_end,             # 'epoch_end': 'end'   
-              'thread_flag': False}               # 'thread_flag': False
+              'thread_flag': True}               # 'thread_flag': False
 
     parse_wm_videos(**kwargs)
 
