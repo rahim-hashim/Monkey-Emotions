@@ -365,7 +365,7 @@ def wm_video_parsing(df, session_obj, trial_specified=None):
 		if v_index > 5:
 				break
 
-def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path, 
+def parse_wm_video(spikeglx_obj, video_file_paths, session_obj, trial_num, video_dict, target_path, 
 									 epoch_start='start', epoch_end='end', thread_flag=False):
 	"""
 	Takes in spikeglx_obj and parses videos for a given trial
@@ -374,6 +374,8 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 	----------
 	spikeglx_obj : SpikeGLX
 		SpikeGLX object
+	video_file_paths: dict
+		Dictionary of video file paths
 	trial_num : int
 		Trial number
 	epoch_start : str
@@ -388,7 +390,6 @@ def parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path
 	"""
 
 	sglx_cam_framenumbers = spikeglx_obj.cam_framenumbers
-	video_file_paths = spikeglx_obj.video_file_paths
 	video_info = spikeglx_obj.video_info
 	
 	for cam in video_file_paths.keys():
@@ -435,11 +436,15 @@ def parse_wm_videos(spikeglx_obj,
 										trial_end=100,
 										epoch_start='start', 
 										epoch_end='end',
-										thread_flag=False):
+										thread_flag=False,
+										exclude_camera=None):
 
 	"""Takes in spikeglx_obj and parses videos for a given trial range"""
 	# get frames
 	video_file_paths = spikeglx_obj.video_file_paths
+	if exclude_camera:
+		for cam in exclude_camera:
+			video_file_paths.pop(cam)
 	video_info = spikeglx_obj.video_info
 	trial_subset = list(range(trial_start, trial_end-1)) # last trial usually drops save signal so excluded
 	video_dict = defaultdict(list)
@@ -453,14 +458,16 @@ def parse_wm_videos(spikeglx_obj,
 	if thread_flag:
 		threads = []
 		for trial_num in sglx_cam_framenumbers_subset.keys():
-			t = Thread(target=parse_wm_video, args=(spikeglx_obj, session_obj, trial_num, video_dict, target_path, epoch_start, epoch_end, thread_flag))
+			t = Thread(target=parse_wm_video, args=(spikeglx_obj, video_file_paths, session_obj, trial_num, 
+																					 	  video_dict, target_path, epoch_start, epoch_end, thread_flag))
 			threads.append(t)
 			t.start()
 		for t in threads:
 			t.join()
 	else:
 		for trial_num in sglx_cam_framenumbers_subset.keys():
-			parse_wm_video(spikeglx_obj, session_obj, trial_num, video_dict, target_path, epoch_start, epoch_end, thread_flag)
+			parse_wm_video(spikeglx_obj, video_file_paths, session_obj, trial_num, 
+										 video_dict, target_path, epoch_start, epoch_end, thread_flag)
 	###
 	print('Video Parsing Complete.')
 	print('  Missing Videos: {}'.format(spikeglx_obj.trial_missing_videos))

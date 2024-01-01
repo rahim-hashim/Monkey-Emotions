@@ -10,6 +10,25 @@ from PIL import Image
 from tqdm.auto import tqdm
 from collections import defaultdict
 
+def _dlc_check_for_GPU():
+	"""Check if GPU is available"""
+	try:
+		import tensorflow as tf
+		try:
+			gpus = tf.config.list_physical_devices('GPU')
+			if gpus:
+				print('Tensorflow GPU found. Enabled for DLC')
+			else:
+				print('Tensorflow GPU not found. Using CPU for DLC')
+				print('  To enable GPU, install CUDA and cuDNN and check Tensorflow installation.')
+				print('    https://www.tensorflow.org/install/')
+				print('  Using CPU ~20x slower than GPU (~120 iter/sec on 4070 Ti GPU vs ~5 iter/sec on CPU)')
+		except:
+			print('  Cannot check for GPU. Check Tensorflow installation.')
+	except:
+		print('Tensorflow not installed. Cannot check for GPU.')
+
+
 def _dlc_check_for_downsample(video_path_list):
 	print('Checking frame size...')
 	# view first frame in video
@@ -56,6 +75,7 @@ def get_trial_video_list(video_dir, camera_dict):
 	print('Checking for video files...')
 	print(f'  Video directory: {video_dir}')
 	trial_videos = [f.split('.')[0] for f in os.listdir(video_dir) if 'e3' in f and f.endswith('.mp4')]
+	print(f'  Number of videos found: {len(trial_videos)}')
 	dlc_video_path_dict = defaultdict(list)
 	for video in tqdm(trial_videos):
 		video_path = os.path.join(video_dir, video+'.mp4')
@@ -124,6 +144,9 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 		video_path_list = dlc_video_path_dict[key]
 		# .mp4 or .avi etc.
 		videotype = os.path.splitext(video_path_list[0])[-1].lstrip('.')
+
+		# Check if GPU is available
+		_dlc_check_for_GPU()
 
 		# Check if videos need to be downsampled
 		downsample_flag = _dlc_check_for_downsample(video_path_list)

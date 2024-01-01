@@ -557,9 +557,9 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		# align on cam_save signal
 		if trial_index_specified == 0:
 			ml_analog = ml_cam_save	
-			# estimate the first 30 seconds of acquisition
+			# estimate the first 60 seconds of acquisition
 			sglx_trial_start_approx = 0
-			sglx_trial_end_approx = 30000
+			sglx_trial_end_approx = 60000
 			# capture SpikeGLX photodiode signal between approximated trial start and end times
 			sglx_analog_approx, sglx_analog_times_approx = \
 				time_to_samples(sglx_cam_save, sample_rate, sample_times, 

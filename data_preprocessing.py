@@ -108,7 +108,7 @@ def data_preprocessing():
               'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
               'epoch_start': epoch_start,         # 'epoch_start': 'start'
               'epoch_end': epoch_end,             # 'epoch_end': 'end'   
-              'thread_flag': True}               # 'thread_flag': False
+              'thread_flag': False}               # 'thread_flag': False
 
     parse_wm_videos(**kwargs)
 
