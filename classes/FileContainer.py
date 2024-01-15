@@ -80,11 +80,11 @@ class FileContainer:
 				print('  {}'.format(os.path.join(root_path, session_folder)))
 		except:
 			print('Session folder not found.')
-			print('Select behavior, video, and SpikeGLX files manually.')
 
 	
 		if beh_file_path is not None or video_dir_path is not None or sglx_dir_path is not None:
 			# initialize tkinter window
+			print('Select behavior, video, and SpikeGLX files manually.')
 			root = tk.Tk()
 			root.withdraw()
 			tkinter_flag = True
@@ -112,6 +112,7 @@ class FileContainer:
 			
 		if tkinter_flag:
 			# close tkinter window
+			root.update()
 			root.destroy()
 
 

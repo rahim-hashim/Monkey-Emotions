@@ -534,6 +534,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	pre_trial_shift = 200
 	if spikeglx_obj.monkey_name == 'gandalf':
 		pre_trial_shift = -1000 # approximate trial start 1000 ms before trial end of previous trial for extra buffer
+	print('Pre Trial Shift:', pre_trial_shift)
 
 	# initialize correlation matrix
 	correlation_matrix = np.zeros(int(np.ceil(len(df)/100))*100)
@@ -625,7 +626,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			print(f'Trial {trial_index_specified+1} | Correlation: {round(corr, 3)} | SGLX High Time: {round(sglx_analog_high, 2)} | ML High Time: {round(ml_analog_high, 2)}')
 
 		# Correlation test with shifting sglx start times to find the best start index
-		elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
+		# elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
+		elif low_corr_flag:
 			print(f'Trial {trial_index_specified+1} low on first approximation | Correlation: {round(corr, 3)} | SGLX High Time: {round(sglx_analog_high, 2)} | ML High Time: {round(ml_analog_high, 2)}')
 			start_shift = 0
 			max_corr = [0, 0] # [shift, corr]

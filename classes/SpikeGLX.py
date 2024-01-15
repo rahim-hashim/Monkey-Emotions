@@ -69,7 +69,8 @@ class SpikeGLX:
     self.trial_times = defaultdict(create_float_defaultdict)
     self.cam_framenumbers = defaultdict(create_float_defaultdict)
     self.ml_sglx_corr_matrix = None
-    self.trial_missing_videos = defaultdict(list)
+    self.trial_skipping_videos = defaultdict(list)    # epoch not found in trial (i.e. error before Trace Start)
+    self.trial_missing_videos = defaultdict(list)     # epoch found in trial but video not found
 
     if sglx_path is not None and monkey_name is not None and date is not None:
       self._find_SGLX()
@@ -87,7 +88,7 @@ class SpikeGLX:
     video_folders = os.listdir(video_path)
     video_folders = [folder for folder in video_folders if os.path.isdir(os.path.join(video_path, folder))]
     print(f'Video Folders:')
-    pprint(video_folders, indent=2)
+    [print(f'  {video_folder}') for video_folder in video_folders]
     for folder in video_folders:
       video_files = sorted(os.listdir(os.path.join(video_path, folder)))
       for video_file in video_files:
@@ -95,6 +96,8 @@ class SpikeGLX:
           camera = video_file.split('-')[0] # default White Matter video file name is <camera>-<date>.mp4
           self.video_file_paths[camera].append(os.path.join(video_path, folder, video_file))
     print('Number of cameras: {}'.format(len(self.video_file_paths.keys())))
+    if len(self.video_file_paths.keys()) == 0:
+      print('WARNING: No videos found in {}'.format(video_path))
     for camera in self.video_file_paths.keys():
       print('  Camera: {} | Number of videos: {}'.format(camera, len(self.video_file_paths[camera])))
 

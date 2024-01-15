@@ -184,7 +184,12 @@ def dlc_initialize_project(dlc_video_path_dict, session_obj, camera_dict):
 
 	return config_path_dict, train_config_path_dict
 
-def dlc_run(config_path_dict, dlc_video_path_dict, start_video=0, end_video=10, videotype='mp4'):
+def dlc_run(config_path_dict, 
+						dlc_video_path_dict, 
+						start_video=0, 
+						end_video=10, 
+						videotype='mp4',
+						create_labeled_video=False):
 	"""Run DLC"""
 	for cam in dlc_video_path_dict.keys():
 		video_path_list = sorted(dlc_video_path_dict[cam], key=lambda x: int(re.findall(r'(\d+)_{0}'.format(cam), x)[0]))
@@ -223,15 +228,16 @@ def dlc_run(config_path_dict, dlc_video_path_dict, start_video=0, end_video=10, 
 				video_list_subset, 
 				videotype=videotype)
 
-		# Create labeled videos
-		deeplabcut.create_labeled_video(
-				config_path, 
-				video_list_subset, 
-				videotype, 
-				draw_skeleton=True, 
-				filtered=True,
-				trailpoints=5,
-		)
+		if create_labeled_video:
+			# Create labeled videos
+			deeplabcut.create_labeled_video(
+					config_path, 
+					video_list_subset, 
+					videotype, 
+					draw_skeleton=True, 
+					filtered=True,
+					trailpoints=5,
+			)
 
 		# # Plot trajectories
 		# deeplabcut.plot_trajectories(config_path, 
