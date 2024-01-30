@@ -528,7 +528,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 	sglx_cam_save = spikeglx_obj.cam_save
 	
 	# correlation test threshold
-	CORR_THRESHOLD = 0.98
+	CORR_THRESHOLD = 0.97
 
 	# for UnityVR task, trial start and trial end times are sometimes asynchronous so extra checks required
 	pre_trial_shift = 200
@@ -626,8 +626,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			print(f'Trial {trial_index_specified+1} | Correlation: {round(corr, 3)} | SGLX High Time: {round(sglx_analog_high, 2)} | ML High Time: {round(ml_analog_high, 2)}')
 
 		# Correlation test with shifting sglx start times to find the best start index
-		# elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
-		elif low_corr_flag:
+		elif low_corr_flag and spikeglx_obj.monkey_name == 'gandalf':
+		# elif low_corr_flag:
 			print(f'Trial {trial_index_specified+1} low on first approximation | Correlation: {round(corr, 3)} | SGLX High Time: {round(sglx_analog_high, 2)} | ML High Time: {round(ml_analog_high, 2)}')
 			start_shift = 0
 			max_corr = [0, 0] # [shift, corr]
@@ -677,6 +677,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			# capture cam_frames in epoch window
 			if e_index == 0:
 				continue
+
 			sglx_cam_framenumbers = spikeglx_cam_frames_window(spikeglx_obj, trial_index_specified, sglx_trial_times, sglx_cam_framenumbers, 
 																											 	 col_start=epochs[e_index-1], col_end=epoch)
 

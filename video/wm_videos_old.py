@@ -47,88 +47,9 @@ def play_video(video_name):
 	video.release()
 	cv2.destroyAllWindows()
 
-def spikeglx_frames(video_folder, 
-										video_paths, 
-										session_obj, 
-										video_dict, 
-										target_path,
-										trial_num, 
-										frame_start_list, 
-										frame_end_list, 
-										cam, 
-										thread_flag=False):
+def spikeglx_frames(video_path, session_obj, video_dict, target_path, trial_num, frame_start, frame_end, cam, thread_flag=False):
 	'''Implements OpenCV to read video file and return a list of frames'''
-	print('  video_paths: {}'.format(video_paths))
-	frames = []
-	video_name = session_obj.monkey + '_' + session_obj.date + '_' + str(trial_num) + '_' + cam + '.mp4'
-	# Video path for each trial
-	video_path_dest = os.path.join(video_folder, video_name)	
-	for v_index, video_path_src in enumerate(video_paths):
-		# if more than one video, get frame start and end for each video
-		frame_start = frame_start_list[v_index]
-		frame_end = frame_end_list[v_index]
-		print('  Video Index {} | Frame Start: {} | Frame End: {}'.format(v_index, frame_start, frame_end))
-		if frame_start > frame_end:
-			print('  WARNING: Frame start is greater than frame end')
-			print('    Cam: {}'.format(cam))
-			print('    Trial: {}'.format(trial_num))
-			print('    Frame Start: {}'.format(frame_start))
-			print('    Frame End: {}'.format(frame_end))
-			continue
-
-		# Open video file
-		cap = cv2.VideoCapture(video_path_src)
-		# Get frame count
-		frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-		# Get frame rate
-		frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
-		# Get frame size
-		frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-		frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-		frame_size = (frame_width, frame_height)
-		# Get duration
-		duration = frame_count / frame_rate
-		video_dict['Trial'].append(trial_num)
-		video_dict['Cam'].append(cam)
-		video_dict['Video'].append(video_path_dest)
-		video_dict['Frame Start'].append(frame_start)
-		video_dict['Frame End'].append(frame_end)
-		video_dict['Frame Count'].append(frame_count)
-		video_dict['Frame Height'].append(frame_height)
-		video_dict['Frame Width'].append(frame_width)
-		# Check if the video file was successfully opened
-		if not cap.isOpened():
-			print("Error opening video file")
-		# Read the number of frames specified by spikeglx_cam_framenumbers
-
-		# Delete video if it already exists
-		if os.path.exists(video_path_dest):
-			print(f'	Deleting existing video file: {video_path_dest}')
-			os.remove(video_path_dest)
-		# Get start and end frame numbers
-		if thread_flag:
-			frame_range = range(frame_start, frame_end)
-		else:
-			frame_range = tqdm(range(frame_start, frame_end), desc=f'Cam: {cam} | Trial: {trial_num} | Frames: {frame_start}-{frame_end}')
-			# clear_output(wait=True)
-		for frame_num in frame_range:
-			cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
-			success, frame = cap.read()
-			if not success:
-					break
-			# Add frame to list of frames
-			frames.append(frame)
-		cap.release()
-		cv2.destroyAllWindows()
-	# Make video from all frames across video(s) included for trial
-	make_video(frames, frame_rate, frame_size, video_path_dest)
-	if thread_flag:
-		# keep lines aligned across | when printing
-		print('  Video complete: Cam: {} | Trial: {:<4} | Frames: {}-{}'.format(cam, trial_num, frame_start, frame_end))
-
-
-def get_frames(video_path):
-	'''Implements OpenCV to read video file and return a list of frames'''
+	# use regex to find values after T i.e. find T153331-155332 from e3v83ad-20230929T153331-155332.mp4
 	cap = cv2.VideoCapture(video_path)
 	# Get frame count
 	frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -138,7 +59,66 @@ def get_frames(video_path):
 	frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 	frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 	frame_size = (frame_width, frame_height)
-	print('Video File: ', video_path)
+	# Get duration
+	duration = frame_count / frame_rate
+	video_dict['Trial'].append(trial_num)
+	video_dict['Cam'].append(cam)
+	video_dict['Video'].append(video_path)
+	video_dict['Frame Start'].append(frame_start)
+	video_dict['Frame End'].append(frame_end)
+	video_dict['Frame Count'].append(frame_count)
+	video_dict['Frame Height'].append(frame_height)
+	video_dict['Frame Width'].append(frame_width)
+	# Check if the video file was successfully opened
+	if not cap.isOpened():
+		print("Error opening video file")
+	# Read the number of frames specified by spikeglx_cam_framenumbers
+	if os.path.exists(os.path.join(os.getcwd(), 'video')) == False:
+		os.mkdir(os.path.join(os.getcwd(), 'video'))
+	video_folder = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
+	if os.path.exists(video_folder) == False:
+		os.mkdir(video_folder)
+	frames = []
+	video_name = session_obj.monkey + '_' + session_obj.date + '_' + str(trial_num) + '_' + cam + '.mp4'
+	video_path = os.path.join(video_folder, video_name)
+	# Delete video if it already exists
+	if os.path.exists(video_path):
+		print(f'	Deleting existing video file: {video_path}')
+		os.remove(video_path)
+	# Get start and end frame numbers
+	if thread_flag:
+		frame_range = range(frame_start, frame_end)
+	else:
+		frame_range = tqdm(range(frame_start, frame_end), desc=f'Cam: {cam} | Trial: {trial_num} | Frames: {frame_start}-{frame_end}')
+		clear_output(wait=True)
+	for frame_num in frame_range:
+		cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+		success, frame = cap.read()
+		if not success:
+				break
+		# Add frame to list of frames
+		frames.append(frame)
+	make_video(frames, frame_rate, frame_size, video_path)
+	if thread_flag:
+		# keep lines aligned across | when printing
+		print('  Video complete: Cam: {} | Trial: {:<4} | Frames: {}-{}'.format(cam, trial_num, frame_start, frame_end))
+	cap.release()
+	cv2.destroyAllWindows()
+
+def get_frames(file_path):
+	'''Implements OpenCV to read video file and return a list of frames'''
+	cap = cv2.VideoCapture(file_path)
+	# Get frame count
+	frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+	# Get frame rate
+	frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
+	# Get frame size
+	frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+	frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+	frame_size = (frame_width, frame_height)
+	# Get duration
+	duration = frame_count / frame_rate
+	print('Video File: ', file_path)
 	print('  Frame Count  : ', frame_count)
 	print('  Frame Rate   : ', frame_rate)
 	print(f'  Frame Size   :  {frame_width} x {frame_height}')
@@ -385,15 +365,8 @@ def wm_video_parsing(df, session_obj, trial_specified=None):
 		if v_index > 5:
 				break
 
-def parse_wm_video(spikeglx_obj, 
-									 video_file_paths, 
-									 session_obj, 
-									 trial_num, 
-									 video_dict, 
-									 target_path, 
-									 epoch_start='start', 
-									 epoch_end='end', 
-									 thread_flag=False):
+def parse_wm_video(spikeglx_obj, video_file_paths, session_obj, trial_num, video_dict, target_path, 
+									 epoch_start='start', epoch_end='end', thread_flag=False):
 	"""
 	Takes in spikeglx_obj and parses videos for a given trial
 	
@@ -413,81 +386,47 @@ def parse_wm_video(spikeglx_obj,
 	Returns
 	-------
 	None
+	
 	"""
 
 	sglx_cam_framenumbers = spikeglx_obj.cam_framenumbers
 	video_info = spikeglx_obj.video_info
 	
-	# Create video folder if it doesn't exist
-	if os.path.exists(os.path.join(os.getcwd(), 'video')) == False:
-		os.mkdir(os.path.join(os.getcwd(), 'video'))
-	video_folder = os.path.join(os.getcwd(), 'video', session_obj.monkey + '_' + session_obj.date)
-	if os.path.exists(video_folder) == False:
-		os.mkdir(video_folder)
-
-	# Create video for each trial
 	for cam in video_file_paths.keys():
 		trial_frame_start = sglx_cam_framenumbers[trial_num][epoch_start]
 		trial_frame_end = sglx_cam_framenumbers[trial_num][epoch_end]
-		print(f'  Trial Frame Start: {trial_frame_start}')
-		print(f'  Trial Frame End: {trial_frame_end}')
-		video_paths = []
 		video_found_flag = False
-		for v_index, video_path in enumerate(sorted(video_file_paths[cam])):
-			video_name = os.path.basename(video_path)
+		for video in video_file_paths[cam]:
+			video_name = os.path.basename(video)
 			video_frame_start = video_info[cam][video_name]['index_start']
 			video_frame_end = video_info[cam][video_name]['index_end']
-			# check if trial frame start and end are within one video frames
-			if  trial_frame_start >= video_frame_start and trial_frame_end <= video_frame_end:
-					video_paths = [video_path]
-					frame_start_shifted = [trial_frame_start - video_info[cam][video_name]['index_start']]
-					frame_end_shifted = [trial_frame_end - video_info[cam][video_name]['index_start']]
-					spikeglx_frames(video_folder, video_paths, session_obj, video_dict, target_path, trial_num, \
-										 			frame_start_shifted, frame_end_shifted, cam, thread_flag)
+			if  trial_frame_start >= video_frame_start:
+				if trial_frame_end <= video_frame_end:
+					# trial frame end is within video frames
+					video_path = video
+					frame_start_shifted = trial_frame_start - video_info[cam][video_name]['index_start']
+					frame_end_shifted = trial_frame_end - video_info[cam][video_name]['index_start']
+					spikeglx_frames(video_path, session_obj, video_dict, target_path, trial_num, frame_start_shifted, frame_end_shifted, cam, thread_flag)
 					video_found_flag = True
 					break
-			# check if trial frame start is greater than current video
-			elif trial_frame_start > video_frame_end:
-				continue
-			# check if trial frame start is in video 1 frames and end is in video 2 frames
-			elif trial_frame_start >= video_frame_start and \
-						trial_frame_end > video_frame_end and \
-						v_index+1 < len(video_file_paths[cam]) and \
-						cam in video_file_paths[cam][v_index+1]:
-				# check if next video contains the frame
-				next_video_name = os.path.basename(video_file_paths[cam][v_index+1])
-				next_video_frame_start = video_info[cam][next_video_name]['index_start']
-				next_video_frame_end = video_info[cam][next_video_name]['index_end']
-				if trial_frame_end >= next_video_frame_start and trial_frame_end <= next_video_frame_end:
-					print('  Trial spans two videos. Concatenating frames...')
-					# trial frame end is within next video frames
-					video_paths = [video_path, video_file_paths[cam][v_index+1]]
-					frame_start_shifted_vid1 = trial_frame_start - video_info[cam][video_name]['index_start']
-					frame_end_shifted_vid1 = video_info[cam][video_name]['index_end']
-					frame_start_shifted_vid2 = 0
-					frame_end_shifted_vid2 = trial_frame_end - video_info[cam][next_video_name]['index_start']
-					frame_start_shifted_list = [frame_start_shifted_vid1, frame_start_shifted_vid2]
-					frame_end_shifted_list = [frame_end_shifted_vid1, frame_end_shifted_vid2]
-					spikeglx_frames(video_folder, video_paths, session_obj, video_dict, target_path, trial_num, \
-													frame_start_shifted_list, frame_end_shifted_list, cam, thread_flag)
-					video_found_flag = True
-					break
-			else:
-				print('  Something went wrong with video parsing for trial {}'.format(trial_num))
-				continue
-		if video_paths == []:
+				else:
+					pass
+					# DO SOMETHING HERE
+		if video_found_flag == False:
 			if np.isnan(trial_frame_start) and np.isnan(trial_frame_end):
-				print('Epochs not found for trial {}'.format(trial_num))
-				spikeglx_obj.trial_skipping_videos[cam].append(trial_num)
+				# trial missing start and/or stop frame either due to
+				# error in trial or missing information
 				pass
 			else:
 				print('Video not found for trial {} although frame epochs found'.format(trial_num))
 				print('  Cam: {}'.format(cam))
 				print('  Frame Start: {}'.format(trial_frame_start))
 				print('  Frame End: {}'.format(trial_frame_end))
-				spikeglx_obj.trial_missing_videos[cam].append(trial_num)
+			spikeglx_obj.trial_missing_videos[cam].append(trial_num)
 		elif video_found_flag == False:
-			print('Something went wrong with video parsing for trial {}'.format(trial_num))
+			print('Video crosses multiple videos for trial {}'.format(trial_num))
+			print('  Frame Start: {}'.format(trial_frame_start))
+			print('  Frame End: {}'.format(trial_frame_end))
 			spikeglx_obj.trial_missing_videos[cam].append(trial_num)
 
 def parse_wm_videos(spikeglx_obj, 
@@ -502,9 +441,7 @@ def parse_wm_videos(spikeglx_obj,
 	"""Takes in spikeglx_obj and parses videos for a given trial range"""
 	# get frames
 	video_file_paths = spikeglx_obj.video_file_paths
-	print('Included Cameras: {}'.format(video_file_paths.keys()))
 	if exclude_camera:
-		print('  Excluded Camera(s): {}'.format(exclude_camera))
 		for cam in exclude_camera:
 			video_file_paths.pop(cam, None)
 	video_info = spikeglx_obj.video_info
@@ -532,10 +469,7 @@ def parse_wm_videos(spikeglx_obj,
 										 video_dict, target_path, epoch_start, epoch_end, thread_flag)
 	###
 	print('Video Parsing Complete.')
-	print('  Missing Videos:')
-	for cam in spikeglx_obj.trial_missing_videos.keys():
-		print('    Cam: {}'.format(cam))
-		print('      Trials: {}'.format(spikeglx_obj.trial_missing_videos[cam]))
+	print('  Missing Videos: {}'.format(spikeglx_obj.trial_missing_videos))
 
 def find_wm_videos(df):
 	pass
