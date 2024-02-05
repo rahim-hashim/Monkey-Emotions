@@ -30,7 +30,7 @@ def data_preprocessing():
   ################## Parse ML Data ##################
 
   # Set DATA_DIR as default directory to select files
-  DATA_DIR = 'C:\\Users\\rober\\SynologyDrive\Rob'
+  DATA_DIR = 'C:\\Users\\rober\\Desktop'
   VIDEO_DIR = 'C:\\Users\\rober\\Desktop\\rhAirpuff\\videos'
   file_container_obj = FileContainer(DATA_DIR, VIDEO_DIR, MONKEY, DATE)
 
@@ -108,7 +108,8 @@ def data_preprocessing():
               'trial_end': len(session_obj.df),   # 'trial_end': len(session_obj.df)
               'epoch_start': epoch_start,         # 'epoch_start': 'start'
               'epoch_end': epoch_end,             # 'epoch_end': 'end'   
-              'thread_flag': False}               # 'thread_flag': False
+              'thread_flag': False,               # 'thread_flag': False
+              'exclude_camera': ['e3v85c5']}      # 'exclude_camera': ['e3v85c5']
 
     parse_wm_videos(**kwargs)
 

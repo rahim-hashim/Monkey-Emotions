@@ -3,6 +3,7 @@ import re
 import cv2
 import sys
 import math
+import logging
 import itertools
 import numpy as np
 import pandas as pd
@@ -385,6 +386,23 @@ def wm_video_parsing(df, session_obj, trial_specified=None):
 		if v_index > 5:
 				break
 
+def generate_log_str(trial_num,
+										 trial_frame_start,
+										 trial_frame_end,
+										 trial_frame_count,
+										 video_1_path='NA',
+										 video_1_frame_start='NA',
+										 video_1_frame_end='NA',
+										 video_2_path='NA',
+										 video_2_frame_start='NA',
+										 video_2_frame_end='NA'):
+	"""Generate string for log file"""
+	log_str = map(str, [trial_num, trial_frame_start, trial_frame_end, trial_frame_count,
+										 	video_1_path, video_1_frame_start, video_1_frame_end,
+											video_2_path, video_2_frame_start, video_2_frame_end])
+	log_str = ','.join(log_str)
+	return log_str
+
 def parse_wm_video(spikeglx_obj, 
 									 video_file_paths, 
 									 session_obj, 
@@ -425,30 +443,52 @@ def parse_wm_video(spikeglx_obj,
 	if os.path.exists(video_folder) == False:
 		os.mkdir(video_folder)
 
+	# Create .csv log file to print parameters used for video parsing
+	log_file = os.path.join(video_folder, 'log.csv')
+	log = open(log_file, 'a')
+	# Write header if log file is empty
+	if os.stat(log_file).st_size == 0:
+		log.write('Trial, Cam, Trial_Frame_Start, Trial_Frame_End, Trial_Frame_Count, \
+							 Video_1_Path, Video_1_Frame_Start, Video_1_Frame_End, \
+							 Video_2_Path, Video_2_Frame_Start, Video_2_Frame_End\n')
+
+
 	# Create video for each trial
 	for cam in video_file_paths.keys():
 		trial_frame_start = sglx_cam_framenumbers[trial_num][epoch_start]
 		trial_frame_end = sglx_cam_framenumbers[trial_num][epoch_end]
-		print(f'  Trial Frame Start: {trial_frame_start}')
-		print(f'  Trial Frame End: {trial_frame_end}')
 		video_paths = []
 		video_found_flag = False
+		# log parameters used for video parsing
+		log_kwargs = {'trial_num': trial_num,
+									'trial_frame_start': trial_frame_start,
+									'trial_frame_end': trial_frame_end,
+									'trial_frame_count': trial_frame_end-trial_frame_start}
+		log_str = ''
+		
 		for v_index, video_path in enumerate(sorted(video_file_paths[cam])):
 			video_name = os.path.basename(video_path)
 			video_frame_start = video_info[cam][video_name]['index_start']
 			video_frame_end = video_info[cam][video_name]['index_end']
+
+			# check if trial frame start is greater than current video
+			if trial_frame_start > video_frame_end:
+				continue
+
 			# check if trial frame start and end are within one video frames
-			if  trial_frame_start >= video_frame_start and trial_frame_end <= video_frame_end:
+			elif trial_frame_start >= video_frame_start and trial_frame_end <= video_frame_end:
 					video_paths = [video_path]
 					frame_start_shifted = [trial_frame_start - video_info[cam][video_name]['index_start']]
 					frame_end_shifted = [trial_frame_end - video_info[cam][video_name]['index_start']]
 					spikeglx_frames(video_folder, video_paths, session_obj, video_dict, target_path, trial_num, \
-										 			frame_start_shifted, frame_end_shifted, cam, thread_flag)
+													frame_start_shifted, frame_end_shifted, cam, thread_flag)
 					video_found_flag = True
+					# log parameters used for video parsing
+					log_kwargs['video_1_path'] = video_path
+					log_kwargs['video_1_frame_start'] = frame_start_shifted[0]
+					log_kwargs['video_1_frame_end'] = frame_end_shifted[0]
 					break
-			# check if trial frame start is greater than current video
-			elif trial_frame_start > video_frame_end:
-				continue
+
 			# check if trial frame start is in video 1 frames and end is in video 2 frames
 			elif trial_frame_start >= video_frame_start and \
 						trial_frame_end > video_frame_end and \
@@ -471,10 +511,22 @@ def parse_wm_video(spikeglx_obj,
 					spikeglx_frames(video_folder, video_paths, session_obj, video_dict, target_path, trial_num, \
 													frame_start_shifted_list, frame_end_shifted_list, cam, thread_flag)
 					video_found_flag = True
+					# log parameters used for video parsing
+					log_kwargs['video_1_path'] = video_paths[0]
+					log_kwargs['video_1_frame_start'] = frame_start_shifted_vid1
+					log_kwargs['video_1_frame_end'] = frame_end_shifted_vid1
+					log_kwargs['video_2_path'] = video_paths[1]
+					log_kwargs['video_2_frame_start'] = frame_start_shifted_vid2
+					log_kwargs['video_2_frame_end'] = frame_end_shifted_vid2
 					break
 			else:
 				print('  Something went wrong with video parsing for trial {}'.format(trial_num))
 				continue
+			
+		# log parameters used for video parsing
+		log_str = generate_log_str(**log_kwargs)
+		log.write(log_str + '\n')
+
 		if video_paths == []:
 			if np.isnan(trial_frame_start) and np.isnan(trial_frame_end):
 				print('Epochs not found for trial {}'.format(trial_num))
@@ -486,9 +538,12 @@ def parse_wm_video(spikeglx_obj,
 				print('  Frame Start: {}'.format(trial_frame_start))
 				print('  Frame End: {}'.format(trial_frame_end))
 				spikeglx_obj.trial_missing_videos[cam].append(trial_num)
+			# log parameters used for video parsing
+			log_str = generate_log_str(**log_kwargs)
 		elif video_found_flag == False:
 			print('Something went wrong with video parsing for trial {}'.format(trial_num))
 			spikeglx_obj.trial_missing_videos[cam].append(trial_num)
+
 
 def parse_wm_videos(spikeglx_obj, 
 										session_obj,

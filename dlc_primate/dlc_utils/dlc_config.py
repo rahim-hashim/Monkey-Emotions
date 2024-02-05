@@ -189,7 +189,8 @@ def dlc_run(config_path_dict,
 						start_video=0, 
 						end_video=10, 
 						videotype='mp4',
-						create_labeled_video=False):
+						create_labeled_video=False,
+						session_obj=None):
 	"""Run DLC"""
 	for cam in dlc_video_path_dict.keys():
 		video_path_list = sorted(dlc_video_path_dict[cam], key=lambda x: int(re.findall(r'(\d+)_{0}'.format(cam), x)[0]))
@@ -244,3 +245,12 @@ def dlc_run(config_path_dict,
 		# 														 video_list_subset, 
 		# 														 videotype, 
 		# 														 filtered=True)
+			
+		if session_obj:
+			# count number of videos in output directory
+			print('Number of videos in output directory:')
+			for cam in dlc_video_path_dict.keys():
+				print(f'  {cam}: {len(dlc_video_path_dict[cam])}')
+			print('Number of trials:')
+			print(f' Total trials:   {len(session_obj.df)}')
+			print(f' Correct trials: {len(session_obj.df[session_obj.df["correct"] == 1])}')
