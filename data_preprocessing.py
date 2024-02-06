@@ -24,8 +24,8 @@ def data_preprocessing():
 
   PARSE_WM_FLAG = True    # True if you want to parse White Matter videos
   DEEPLABCUT_FLAG = True  # True if you want to run DLC
-  MONKEY = 'gandalf'      # 'gandalf', 'aragorn', 'bear'
-  DATE = '20231220'       # YYYYMMDD
+  MONKEY = 'aragorn'      # 'gandalf', 'aragorn', 'bear'
+  DATE = '20240205'       # YYYYMMDD
 
   ################## Parse ML Data ##################
 

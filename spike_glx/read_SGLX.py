@@ -50,7 +50,6 @@ def print_meta(meta, verbose=False):
 	print(f'  Number of Channels: {n_channels}')
 	print(f'  File Created: {file_created_time}')
 	print(f'  File Length: {file_length}')
-	return n_channels
 
 def get_spikeglx_path():
 	print('Select binary file')
@@ -60,7 +59,8 @@ def get_spikeglx_path():
 	# Windows specific; forces the window to appear in front
 	root.attributes("-topmost", True)
 	binFullPath = Path(filedialog.askopenfilename(title="Select binary file"))
-	root.destroy()   
+	root.destroy()
+	root.quit()
 	
 	return binFullPath
 
@@ -92,12 +92,16 @@ def load_spikeglx(binFullPath):
 	meta = readMeta(binFullPath)
 
 	# Find Number of Channels
-	n_channels = print_meta(meta)
+	print_meta(meta)
 
 	# Initialize Channel Dictionary
 	chan_dict = defaultdict(list)
 
 	rawData = makeMemMapRaw(binFullPath, meta)
+
+	# Get number of channels
+	n_channels = meta['nSavedChans']
+
 	for chan in range(int(n_channels)):
 
 		# Assign channel raw data to dictionary
@@ -130,7 +134,6 @@ def parse_channels(meta, chan_dict, signal_dict):
 		converted to mV.
 	"""
 	sRate = SampRate(meta)
-	tDat = np.array(0)
 	chan_dict_corrected = defaultdict(list)
 	print('Number of Channels: ', len(chan_dict.keys()))
 	print('Sample Rate: ', sRate)

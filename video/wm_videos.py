@@ -520,7 +520,7 @@ def parse_wm_video(spikeglx_obj,
 					log_kwargs['video_2_frame_end'] = frame_end_shifted_vid2
 					break
 			else:
-				print('  Something went wrong with video parsing for trial {}'.format(trial_num))
+				# epoch missing for given trial
 				continue
 			
 		# log parameters used for video parsing
