@@ -1,21 +1,40 @@
 import os
+import re
 import sys
 import pickle
 import argparse
+import datetime
 import shutil
+
+MONKEY_LIST = ['gandalf', 'aragorn', 'bear']
+
+def find_date_monkey(src):
+    """find date and monkey name from src"""
+    # get last part of src and take out extension
+    src_split = src.split(os.sep)[-1].split('.')[0].split('_')
+    monkey = [part for part in src_split if part.lower() in MONKEY_LIST][0]
+    if len(monkey) == 0:
+        sys.exit(f'ERROR - Monkey name not found in file name: {src}')
+    # find date if YYYYMMDD or YYMMDD format and convert to YYYYMMDD
+    date = [part for part in src_split if re.match(r'\d{6,8}', part)]
+    if len(date) == 0:
+        sys.exit(f'ERROR - Date not found in file name: {src}')
+    elif len(date[0]) == 6:
+        date = datetime.datetime.strptime(date[0], '%y%m%d').strftime('%Y%m%d')
+    elif len(date[0]) == 8:
+        date = date[0]
+    return date, monkey
 
 def copy_file(src, dst, max_size):
     """copy file from src to dst"""
     print(f'Moving file: {args.src}')
     print(f'Target directory: {args.dst}')
-    # get last part of src and take out extension
-    src_split = src.split(os.sep)[-1].split('.')[0].split('_')
-    date = src_split[0]
-    monkey = src_split[1].lower()
+    # find date and monkey name from src
+    date, monkey = find_date_monkey(src)
     print('  date:', date)
     print('  monkey:', monkey)
     # create new folder in dst
-    new_folder = os.path.join(dst, f'{monkey}_20{date}')
+    new_folder = os.path.join(dst, f'{monkey}_{date}')
     if not os.path.exists(new_folder):
         os.makedirs(new_folder)
         print('Created new folder:', new_folder)
@@ -35,14 +54,12 @@ def copy_folder(src, dst, max_size):
     # check if dst folder exists
     if not os.path.exists(dst):
         sys.exit(f'Destination folder does not exist: {dst}')
-    # get last part of src and take out extension
-    src_split = src.split(os.sep)[-1].split('_')
-    date = src_split[0]
-    monkey = src_split[1].lower()
+    # find date and monkey name from src
+    date, monkey = find_date_monkey(src)
     print('  date:', date)
     print('  monkey:', monkey)
     # create new folder in dst
-    new_folder = os.path.join(dst, f'{monkey}_20{date}')
+    new_folder = os.path.join(dst, f'{monkey}_{date}')
     if not os.path.exists(new_folder):
         os.makedirs(new_folder)
         print('Created new folder:', new_folder)
