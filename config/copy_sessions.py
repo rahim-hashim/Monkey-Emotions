@@ -27,8 +27,6 @@ def find_date_monkey(src):
 
 def copy_file(src, dst, max_size):
     """copy file from src to dst"""
-    print(f'Moving file: {args.src}')
-    print(f'Target directory: {args.dst}')
     # find date and monkey name from src
     date, monkey = find_date_monkey(src)
     print('  date:', date)
@@ -38,8 +36,11 @@ def copy_file(src, dst, max_size):
     if not os.path.exists(new_folder):
         os.makedirs(new_folder)
         print('Created new folder:', new_folder)
+    print(f'Copying file: {args.src}')
+    print(f'Target directory: {args.dst}')
     # copy file to new folder
     tgt_file = os.path.join(new_folder, src.split(os.sep)[-1])
+    # check file size
     size_src = os.path.getsize(src) / 1e6
     print(f'  File size: {size_src:.2f} MB')
     if size_src > max_size:
@@ -47,25 +48,39 @@ def copy_file(src, dst, max_size):
     shutil.copy2(src, tgt_file)
     print('Done.')
 
-def copy_folder(src, dst, max_size):
+def copy_folder(src, dst, max_size, folder_name):
     """copy folder from src to dst"""
-    print(f'Moving folder: {src}')
-    print(f'Target directory: {dst}')
-    # check if dst folder exists
-    if not os.path.exists(dst):
-        sys.exit(f'Destination folder does not exist: {dst}')
+
     # find date and monkey name from src
     date, monkey = find_date_monkey(src)
     print('  date:', date)
     print('  monkey:', monkey)
     # create new folder in dst
     new_folder = os.path.join(dst, f'{monkey}_{date}')
+    if folder_name is not None:
+        new_folder = new_folder + '_' + folder_name
     if not os.path.exists(new_folder):
         os.makedirs(new_folder)
         print('Created new folder:', new_folder)
+    print(f'Copying folder: {src}')
+    print(f'Target directory: {dst}')
     # copy file to new folder
     tgt_folder = os.path.join(new_folder, src.split(os.sep)[-1])
-    shutil.copytree(src, tgt_folder)
+    # check folder size
+    size_src = shutil.disk_usage(src).total / 1e6
+    print(f'  Folder size: {size_src:.2f} MB')
+    # check each file in folder size and copy if less than max_size, print if greater
+    for root, dirs, files in os.walk(src):
+        for file in files:
+            file_path = os.path.join(root, file)
+            size_file = os.path.getsize(file_path) / 1e6
+            if size_file > max_size:
+                print(f'File size exceeds maximum size: {max_size} MB')
+                print(f'  {file_path}: {size_file:.2f} MB')
+            else:
+                print(f'Copying file: {file_path}')
+                shutil.copy2(file_path, tgt_folder)
+    # shutil.copytree(src, tgt_folder)
     print('Done.')
 
 if __name__ == '__main__':
@@ -76,6 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('--folder', help='copy folder', action='store_true')
     parser.add_argument('--max_size', help='maximum size of file to copy (in MB)', default=1000, type=float)
     parser.add_argument('--file_type', help='file type to copy', default='h5')
+    parser.add_argument('--name', help='name of file or folder to copy')
     
     # parse arguments
     args = parser.parse_args()
@@ -91,10 +107,10 @@ if __name__ == '__main__':
         args.dst = '/mnt/c/Users/L6_00/SynologyDrive/Rahim/'
     # check if dst folder exists
     if not os.path.exists(args.dst):
-        sys.exit(f'Destination folder does not exist: {args.dst}')
+        sys.exit(f'ERROR - Destination folder does not exist: {args.dst}')
 
     # copy file or folder
     if args.file:
         copy_file(args.src, args.dst, args.max_size)
     if args.folder:
-        copy_folder(args.src, args.dst, args.max_size)
+        copy_folder(args.src, args.dst, args.max_size, args.name)

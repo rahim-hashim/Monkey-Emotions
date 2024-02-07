@@ -232,6 +232,12 @@ class SpikeGLX:
 
   def save_obj(self, target_folder=None):
     """Saves SpikeGLX object as pickle file"""
+    # create folder if it doesn't exist
+    if not os.path.exists(target_folder):
+      os.makedirs(target_folder)
+      print(f'Created new session folder: {target_folder}')
+    
+    # create pickle file
     pkl_path = os.path.join(target_folder, f'spikeglx_obj_{self.monkey_name}_{self.date}.pkl')
     with open(pkl_path, 'wb') as f:
       # get info on size of pickle file
