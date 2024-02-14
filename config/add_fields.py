@@ -476,7 +476,9 @@ def add_fields(df, session_obj, behavioral_code_dict):
 			df['valence_not_chosen'] = df.apply(valence_not_chosen, stim=1, axis=1)
 		except:
 			print('   No reward magnitude column found, skipping valence assignment...')
-	df['lick_raster'] = df.apply(lick_window, lick_threshold=session_obj.lick_threshold, axis=1)
+	# check if lick column exists
+	if 'lick' in df.columns:
+		df['lick_raster'] = df.apply(lick_window, lick_threshold=session_obj.lick_threshold, axis=1)
 	df['DEM_raster'] = df.apply(DEM_window, axis=1)
 	df['trial_bins'] = df.apply(trial_bins, axis=1)
 	df['trial_in_block'] = trial_in_block(df)
@@ -569,5 +571,7 @@ def add_fields(df, session_obj, behavioral_code_dict):
 	except:
 		print('   No fractal column found, skipping fractal count...')
 		pass
-
+	
+	# order dataframe by trial_num and reset index
+	df = df.sort_values(by='trial_num').reset_index(drop=True)
 	return df, session_obj

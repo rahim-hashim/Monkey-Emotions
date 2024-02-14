@@ -27,8 +27,9 @@ class Session:
 		self.monkey = monkey_input.lower()
 		self.task = task
 		self.window_lick = 1000
-		# determine lick threshold
-		self.estimate_lick_threshold()
+		# determine lick threshold only if lick data is available in df:
+		if 'lick' in df.columns:
+			self.estimate_lick_threshold()
 		self.window_blink = 1300
 		self.colors = []
 		self.stim_labels = []
@@ -54,6 +55,7 @@ class Session:
 		self.figure_path = ''
 		self.tracker_path = ''
 		self.video_path = ''
+		self.sglx_obj = None
 		
 		# specific to each task
 		if df_flag:

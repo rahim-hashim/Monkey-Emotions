@@ -7,7 +7,11 @@ from classes.SpikeGLX import SpikeGLX
 # Custom modules
 from spike_glx import read_SGLX
 
-def load_sglx(session_df, session_obj, file_container_obj, signal_dict, epochs):
+def load_sglx(session_df, 
+              session_obj, 
+              file_container_obj, 
+              signal_dict, 
+              epochs):
   """unpickle spikeglx_obj"""
   # try:
   pickle_flag = False
@@ -73,8 +77,8 @@ def load_sglx(session_df, session_obj, file_container_obj, signal_dict, epochs):
     print('Plotting ML and SpikeGLX photodiode signals...')
     read_SGLX.plot_analog_ML(session_df, epochs, trial_num=1)
     print('  Done.')
-    print('Plotting first trial...')
-    read_SGLX.plot_trial_0(session_df, spikeglx_obj)
+    # print('Plotting first trial...')
+    # read_SGLX.plot_trial_0(session_df, spikeglx_obj)
     print('  Done.')
     print('Saving spikeglx_obj...')
     spikeglx_obj.save_obj(target_folder=session_folder)

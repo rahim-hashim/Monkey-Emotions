@@ -131,7 +131,7 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		pass
 
 	# TrialRecord.User fields (reinforcement)
-	if 'reward_stim_1' not in trial_record['User'].keys():
+	if trial_record != None and 'reward_stim_1' not in trial_record['User'].keys():
 		try:
 			stim_container = trial_record['User']['stim_list']
 			stim_list = stim_container.keys()
@@ -170,6 +170,9 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 	for t_index, trial in enumerate(tqdm(trial_list)):
 		# skip cam data (redundant check)
 		if 'Cam' in trial:
+			continue
+		# skip last trial
+		if trial_list[t_index] == f'Trial{len(trial_list)}':
 			continue
 
 		# all trial data
@@ -306,21 +309,41 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 			except:
 				pass
 
+		# analog data
+		## cam sync = Gen1
+		## cam save = Gen2
+		analog_field = 'AnalogData'
+		LICK_ANALOG = 'Gen1'
+		CAM_SYNC_ANALOG = 'Gen2'
+		CAM_SAVE_ANALOG = 'Gen3'
+		if monkey_input == 'gandalf':
+			analog_field = 'RestructuredAnalog'
+			CAM_SYNC_ANALOG = 'Gen1'
+			CAM_SAVE_ANALOG = 'Gen2'
+			LICK_ANALOG = 'Gen3'
+			pass
+		
 		# eye data
-		x = np.array(trial_data['AnalogData']['Eye'])
+		x = np.array(trial_data[analog_field]['Eye'])
 		eye_data = x.view(np.float64).reshape(x.shape+(-1,))
 		session_dict['eye_x'].append(eye_data[0].flatten())
 		session_dict['eye_y'].append(eye_data[1].flatten())
 
 		# pupil data
-		x = np.array(trial_data['AnalogData']['EyeExtra'])
+		try:
+			x = np.array(trial_data[analog_field]['EyeExtra'])
+		except:
+			pass
 		try:
 			session_dict['eye_pupil'].append(x[0])
 		except:
 			pass # no pupil data
 
 		# joystick data
-		x = np.array(trial_data['AnalogData']['Joystick'])
+		try:
+			x = np.array(trial_data[analog_field]['Joystick'])
+		except:
+			pass
 		try:
 			joystick_data = x.view(np.float64).reshape(x.shape+(-1,))
 			session_dict['joystick_x'].append(joystick_data[0])
@@ -329,23 +352,24 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 			pass # no joystick data
 
 		# lick data
-		x = np.array(trial_data['AnalogData']['General']['Gen1'])
-		session_dict['lick'].append(x[0])
+		try:
+			x = np.array(trial_data[analog_field]['General'][LICK_ANALOG])
+			session_dict['lick'].append(x[0])
+		except:
+			pass # no lick data
 
 		# camera TTL (sync + save) data
 		try:
-			x = np.array(trial_data['AnalogData']['General']['Gen2'])
+			x = np.array(trial_data[analog_field]['General'][CAM_SYNC_ANALOG])
 			session_dict['cam_sync'].append(x[0])
-			y = np.array(trial_data['AnalogData']['General']['Gen3'])
+			y = np.array(trial_data[analog_field]['General'][CAM_SAVE_ANALOG])
 			session_dict['cam_save'].append(y[0])
 		except:
+			print('	Missing camera TTL data.')
 			pass
 
-		# reward data
-		# x = np.array(trial_data['VariableChanges'])
-
 		# photodiode data
-		x = np.array(trial_data['AnalogData']['PhotoDiode'])
+		x = np.array(trial_data[analog_field]['PhotoDiode'])
 		try:
 			session_dict['photodiode'].append(x[0])
 		except:

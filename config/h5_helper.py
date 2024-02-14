@@ -81,8 +81,16 @@ def h5_parse(f):
     trial_cam_match(trial_list, cam1_list, cam2_list)
 
   print('Total number of trials: {}'.format(len(trial_list)))
-  ml_config = f['ML']['MLConfig']
-  trial_record = f['ML']['TrialRecord']
+  ml_config = None
+  trial_record = None
+  try:
+    ml_config = f['ML']['MLConfig']
+  except:
+    print('  No MLConfig found')
+  try:
+    trial_record = f['ML']['TrialRecord']
+  except:
+    print('  No TrialRecord found')
   return ml_config, trial_record, trial_list, cam1_list, cam2_list
 
 def config_viewer(ml_config):
