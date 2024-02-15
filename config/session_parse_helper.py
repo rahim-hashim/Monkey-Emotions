@@ -1,10 +1,42 @@
 import re
 import sys
+import h5py
 import numpy as np
 from tqdm.auto import tqdm
 from collections import defaultdict
 from datetime import datetime, timedelta
 from analyses.time_processing import calculate_end_time
+
+def recursive_h5py_parser(session_dict, h5py_obj, key_list=[]):
+	'''Recursively parses through h5py object to find all .h5 files'''
+	# maintain list of keys for each recursive call
+	for key in h5py_obj.keys():
+		print(key)
+		if isinstance(h5py_obj[key], h5py._hl.dataset.Dataset):
+			tag = '_'.join(key_list+[key])
+			# print(key, tag, h5py_obj[key][...])
+			text = h5py_obj[key][...].tolist()
+			if text:
+				# bullshit fix for Unity values
+				if type(text) == bytes:
+					# get rid of b'
+					text = text.decode()
+					session_dict[tag].append(text)
+				elif type(text[0]) != list:
+					val = text[0]
+					session_dict[tag].append(val)
+				elif type(text[0]) == list and len(text[0]) == 1:
+						val = text[0][0]
+						session_dict[tag].append(val)
+				# specifically for Additional_Floats field with list of floats
+				else:
+					for v_index, val in enumerate(text[0]):
+						tag_num = '_'.join([tag, str(v_index)])
+						session_dict[tag_num].append(val)
+			else:
+				session_dict[tag].append(np.nan)
+		else:
+			recursive_h5py_parser(session_dict, h5py_obj[key], key_list+[key])
 
 def stimulus_parser(stimulus, stim_num, session_dict):
 	'''Parses out parameters for each stimulus set for each trial config
@@ -210,6 +242,18 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		behavioral_code_times = np.array(trial_data['BehavioralCodes']['CodeTimes'][0])
 		session_dict['behavioral_code_markers'].append(list(map(int,behavioral_code_markers)))
 		session_dict['behavioral_code_times'].append(behavioral_code_times)
+
+		# for UnityVR task
+		try:
+			unity_behavioral_code_markers = np.array(trial_data['BehavioralCodes']['TrialEpochTimes'])
+			for epoch in unity_behavioral_code_markers:
+				# use recursive_h5py_parser
+				unity_behavior_start = np.array(trial_data['BehavioralCodes']['TrialEpochTimes'][epoch])[0][0]
+				unity_behavior_end = np.array(trial_data['BehavioralCodes']['TrialEpochTimes'][epoch])[1][0]
+				session_dict[epoch+'_start'].append(unity_behavior_start)
+				session_dict[epoch+'_end'].append(unity_behavior_end)
+		except:
+			pass
 
 		# stimuli info
 		stimuli_attribute = trial_data['TaskObject']['Attribute']
