@@ -3,6 +3,7 @@ import sys
 import h5py
 import numpy as np
 from tqdm.auto import tqdm
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import datetime, timedelta
 from analyses.time_processing import calculate_end_time
@@ -11,7 +12,6 @@ def recursive_h5py_parser(session_dict, h5py_obj, key_list=[]):
 	'''Recursively parses through h5py object to find all .h5 files'''
 	# maintain list of keys for each recursive call
 	for key in h5py_obj.keys():
-		print(key)
 		if isinstance(h5py_obj[key], h5py._hl.dataset.Dataset):
 			tag = '_'.join(key_list+[key])
 			# print(key, tag, h5py_obj[key][...])
@@ -247,9 +247,13 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		try:
 			unity_behavioral_code_markers = np.array(trial_data['BehavioralCodes']['TrialEpochTimes'])
 			for epoch in unity_behavioral_code_markers:
-				# use recursive_h5py_parser
 				unity_behavior_start = np.array(trial_data['BehavioralCodes']['TrialEpochTimes'][epoch])[0][0]
 				unity_behavior_end = np.array(trial_data['BehavioralCodes']['TrialEpochTimes'][epoch])[1][0]
+				# if non-NaN, subtract 1 (MATLAB to Python indexing)
+				if not np.isnan(unity_behavior_start):
+					unity_behavior_start = int(unity_behavior_start) - 1
+				if not np.isnan(unity_behavior_end):
+					unity_behavior_end = int(unity_behavior_end) - 1
 				session_dict[epoch+'_start'].append(unity_behavior_start)
 				session_dict[epoch+'_end'].append(unity_behavior_end)
 		except:
@@ -434,6 +438,26 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		session_dict['trial_datetime_start'].append(start_datetime)
 		session_dict['trial_datetime_end'].append(end_datetime)
 
+		# UserVar data (for Rob task specifically)
+		try:
+			UserVars = trial_data['UserVars']
+			# xml header
+			xml_root = ET.fromstring(UserVars['XML_Header'][...].tolist().decode())
+			for tag in xml_root.find('desc').findall('*'):
+				for child in tag:
+					tag = child.tag
+					text = child.text
+					session_dict[tag].append(text)
+			# vr trial
+			vr_trial = UserVars['VR_Trial']
+			recursive_h5py_parser(session_dict, vr_trial)
+			vr_data = UserVars['VR_Data']
+			# convert to matrix
+			vr_data = np.array(vr_data)
+			session_dict['VR_Data'].append(vr_data)
+		except:
+			pass
+
 
 	num_trials = len(session_dict['trial_num'])
 	float_fields = ['reward_mag', 'airpuff_mag']
@@ -488,6 +512,7 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 	session_start = session_dict['trial_datetime_start'][0]
 	session_end = session_dict['trial_datetime_end'][-1]
 	session_time = session_end - session_start
+
 	print('    Session Length: ', str(datetime.utcfromtimestamp(session_time.total_seconds()).strftime('%H:%M:%S')))
 	
 	return session_dict, error_dict, behavioral_code_dict

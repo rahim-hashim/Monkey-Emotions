@@ -615,7 +615,6 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				ml_analog_high = i
 				break
 
-
 		# sglx_trial_start is set to the difference between the save_high times
 		if spikeglx_obj.monkey_name == 'gandalf' and trial_index_specified == 0:
 			sglx_trial_start = 0
@@ -692,6 +691,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 		print(f'  Trial {trial_index_specified+1} | Epoch start {sglx_trial_start} | Epoch end {sglx_trial_end}')
 		sglx_trial_times[trial_index_specified]['start'] = sglx_trial_start
 		sglx_trial_times[trial_index_specified]['end'] =  sglx_trial_end
+		sglx_trial_times[trial_index_specified]['all'] = sglx_pd_times_exact
 		sglx_cam_framenumbers = \
 				spikeglx_cam_frames_window(spikeglx_obj, trial_index_specified, 
 																	 sglx_trial_times, sglx_cam_framenumbers, 

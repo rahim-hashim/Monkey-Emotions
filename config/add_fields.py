@@ -38,6 +38,11 @@ def add_epoch_times(df, behavioral_code_dict):
 		if key != 'Not assigned':
 			df[key] = list(epoch_dict.values())[k_index]
 			df[key] = df[key].astype('Int32')
+
+	# only for VR experiments
+	if 'VR_Data' in df.columns:
+		df['Start trial'] = [0]*len(df)
+		df['End trial'] = list(map(len, df['photodiode']))
 	return df
 
 def valence_assignment(row, stim):
