@@ -15,15 +15,15 @@ from classes.Session import Session
 
 
 class FileContainer:
-	def __init__(self, ROOT_DIR, VIDEO_DIR, MONKEY=None, DATE=None):
+	def __init__(self, ROOT_DIR, VIDEO_DIR=None, MONKEY=None, DATE=None, BEHAVIOR_FILE_ONLY=False):
 		self.ml_file_path = None
 		self.white_matter_dir_path = None
 		self.spikeglx_dir_path = None
 		self.monkey_name = {}
 		self.date = {}
-		self.find_files(ROOT_DIR, VIDEO_DIR, MONKEY, DATE)
+		self._find_files(ROOT_DIR, VIDEO_DIR, MONKEY, DATE, BEHAVIOR_FILE_ONLY)
 
-	def find_files(self, ROOT_DIR=None, VIDEO_DIR=None, MONKEY=None, DATE=None):
+	def _find_files(self, ROOT_DIR=None, VIDEO_DIR=None, MONKEY=None, DATE=None, BEHAVIOR_FILE_ONLY=False):
 		"""
 		Load behavior, video, and spikeglx files
 		"""
@@ -97,25 +97,26 @@ class FileContainer:
 																								#('bhv2 files', '.bhv2')
 																								],
 																			initialdir=root_path) 
-
 		if video_dir_path is None:
-			# load video files
-			print(f'  Select directory containing White Matter video files (i.e. {DATE}_{MONKEY})')
-			video_dir_path = askdirectory(title='Select directory containing White Matter video files', 
-																		initialdir=root_path)
+			if not BEHAVIOR_FILE_ONLY:
+				# load video files
+				print(f'  Select directory containing White Matter video files (i.e. {DATE}_{MONKEY})')
+				video_dir_path = askdirectory(title='Select directory containing White Matter video files', 
+																			initialdir=root_path)
 
 		if sglx_dir_path is None:
-			# load spikeglx files
-			print(f'  Select directory containing SpikeGLX files (i.e. {MONKEY}_{DATE}_g0)')
-			sglx_dir_path = askdirectory(title='Select directory containing SpikeGLX .bin and .meta files',
-																	initialdir=root_path)
+			if not BEHAVIOR_FILE_ONLY:
+				# load spikeglx files
+				print(f'  Select directory containing SpikeGLX files (i.e. {MONKEY}_{DATE}_g0)')
+				sglx_dir_path = askdirectory(title='Select directory containing SpikeGLX .bin and .meta files',
+																		initialdir=root_path)
 			
 		if tkinter_flag:
 			# close tkinter window
 			root.update()
 			root.destroy()
 
-
+		# MonkeyLogic file
 		print('Behavior file selected: {}'.format(beh_file_path))
 		beh_file_name = os.path.basename(beh_file_path)
 		ml_date = beh_file_name.split('_')[0]
@@ -124,46 +125,60 @@ class FileContainer:
 		ml_monkey_name = beh_file_name.split('_')[1].lower()
 		self.monkey_name['ml'] = ml_monkey_name
 		print('  MonkeyLogic Monkey: {}'.format(ml_monkey_name))
-
-		video_file_list = os.listdir(video_dir_path)
-		print('Video files directory selected: {}'.format(video_dir_path))
-		video_dir_name = os.path.basename(video_dir_path)
-		wm_date = video_dir_name.split('_')[0]
-		self.date['wm'] = wm_date
-		print('  White Matter Video Date: {}'.format(wm_date))
-		wm_monkey_name = video_dir_name.split('_')[1].lower()
-		self.monkey_name['wm'] = wm_monkey_name
-		print('  White Matter Video Monkey: {}'.format(wm_monkey_name))
-		
-		sglx_file_list = os.listdir(sglx_dir_path)
-		print('SpikeGLX files directory selected: {}'.format(sglx_dir_path))
-		sglx_dir_name = os.path.basename(sglx_dir_path)
-		sglx_date = sglx_dir_name.split('_')[1][2:]
-		self.date['sglx'] = sglx_date
-		print('  SpikeGLX Date: {}'.format(sglx_date))
-		sglx_monkey_name = sglx_dir_name.split('_')[0].lower()
-		self.monkey_name['sglx'] = sglx_monkey_name
-		print('  SpikeGLX Monkey: {}\n'.format(sglx_monkey_name))
-
-		# check to make sure all files are from the same session
-		source_list = ['MonkeyLogic', 'White Matter', 'SpikeGLX']
-		dates = [ml_date, wm_date, sglx_date]
-		monkeys = [ml_monkey_name, wm_monkey_name, sglx_monkey_name]
-		dates_combinations = list(combinations(zip(source_list, dates), 2))
-		monkeys_combinations = list(combinations(zip(source_list, monkeys), 2))
-		for index, date_combination in enumerate(dates_combinations):
-			if date_combination[0][1] != date_combination[1][1]:
-				print('WARNING: dates do not match')
-				print(f'  {date_combination[0][0]}: {date_combination[0][1]}')
-				print(f'  {date_combination[1][0]}: {date_combination[1][1]}')
-			if monkeys_combinations[index][0][1] != monkeys_combinations[index][1][1]:
-				print('WARNING: monkeys do not match')
-				print(f'  {monkeys_combinations[index][0][0]}: {monkeys_combinations[index][0][1]}')
-				print(f'  {monkeys_combinations[index][1][0]}: {monkeys_combinations[index][1][1]}')
 		self.ml_file_path = beh_file_path
-		self.white_matter_dir_path = video_dir_path
-		# parent directory of sglx_dir_path is the sglx data directory used in pipeline
-		self.spikeglx_dir_path = os.path.dirname(sglx_dir_path)
+
+		if BEHAVIOR_FILE_ONLY:
+			print('Behavior file only selected.')
+			print('  Skipping White Matter files.')
+			print('  Skipping SpikeGLX files.')
+			self.monkey_name['wm'] = ''
+			self.date['wm'] = ''
+			self.monkey_name['sglx'] = ''
+			self.date['sglx'] = ''
+			self.white_matter_dir_path = ''
+			self.spikeglx_dir_path = ''
+			return
+		else:
+			# White Matter video files
+			video_file_list = os.listdir(video_dir_path)
+			print('Video files directory selected: {}'.format(video_dir_path))
+			video_dir_name = os.path.basename(video_dir_path)
+			wm_date = video_dir_name.split('_')[0]
+			self.date['wm'] = wm_date
+			print('  White Matter Video Date: {}'.format(wm_date))
+			wm_monkey_name = video_dir_name.split('_')[1].lower()
+			self.monkey_name['wm'] = wm_monkey_name
+			print('  White Matter Video Monkey: {}'.format(wm_monkey_name))
+		
+			# SpikeGLX files
+			sglx_file_list = os.listdir(sglx_dir_path)
+			print('SpikeGLX files directory selected: {}'.format(sglx_dir_path))
+			sglx_dir_name = os.path.basename(sglx_dir_path)
+			sglx_date = sglx_dir_name.split('_')[1][2:]
+			self.date['sglx'] = sglx_date
+			print('  SpikeGLX Date: {}'.format(sglx_date))
+			sglx_monkey_name = sglx_dir_name.split('_')[0].lower()
+			self.monkey_name['sglx'] = sglx_monkey_name
+			print('  SpikeGLX Monkey: {}\n'.format(sglx_monkey_name))
+
+			# check to make sure all files are from the same session
+			source_list = ['MonkeyLogic', 'White Matter', 'SpikeGLX']
+			dates = [ml_date, wm_date, sglx_date]
+			monkeys = [ml_monkey_name, wm_monkey_name, sglx_monkey_name]
+			dates_combinations = list(combinations(zip(source_list, dates), 2))
+			monkeys_combinations = list(combinations(zip(source_list, monkeys), 2))
+			for index, date_combination in enumerate(dates_combinations):
+				if date_combination[0][1] != date_combination[1][1]:
+					print('WARNING: dates do not match')
+					print(f'  {date_combination[0][0]}: {date_combination[0][1]}')
+					print(f'  {date_combination[1][0]}: {date_combination[1][1]}')
+				if monkeys_combinations[index][0][1] != monkeys_combinations[index][1][1]:
+					print('WARNING: monkeys do not match')
+					print(f'  {monkeys_combinations[index][0][0]}: {monkeys_combinations[index][0][1]}')
+					print(f'  {monkeys_combinations[index][1][0]}: {monkeys_combinations[index][1][1]}')
+			self.white_matter_dir_path = video_dir_path
+			# parent directory of sglx_dir_path is the sglx data directory used in pipeline
+			self.spikeglx_dir_path = os.path.dirname(sglx_dir_path)
 	
 	def ml_to_pd(self):
 		ml_beh_file = self.ml_file_path
