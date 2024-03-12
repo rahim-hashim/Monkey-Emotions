@@ -84,5 +84,5 @@ field_dict = {
   'blink_onset': '[n] the blink onset times',
   'blink_offset': '[n] the blink offset times',
   'blink_raster': '[n] the blink raster binarizing the blink data (1 if blink = 1)',
-  
+
 }
