@@ -65,8 +65,8 @@ else
     if [ -f "$target_path/$file_name" ]; then
       echo "  Copied  : $file_name"
       # delete the file from the current directory
-      rm $file_name
-      echo "  Deleted : $file_name"
+      # rm $file_name
+      # echo "  Deleted : $file_name"
     fi
     done
 fi

@@ -72,6 +72,18 @@ def valence_assignment(row, stim):
 		valence = row[f'reward_mag{stim_label}']
 	return valence
 
+def stim_not_chosen(row, stim):
+	# create column for fractal not shown
+	f1, f2, f_chosen = row['stimuli_name_1'], row['stimuli_name_2'], row['fractal_chosen']
+	# error trial
+	if f_chosen != f1 and f_chosen != f2:
+		f_not_chosen = 0
+	elif f1 == f_chosen:
+		f_not_chosen = f2
+	elif f2 == f_chosen:
+		f_not_chosen = f1
+	return f_not_chosen
+
 def valence_not_chosen(row, stim):
 	# create column for valence not chosen
 	v1, v2, v_chosen = row['valence_1'], row['valence_2'], row['valence']
@@ -479,6 +491,7 @@ def add_fields(df, session_obj, behavioral_code_dict):
 			df['valence_2'] = df.apply(valence_assignment, stim=2, axis=1)
 			# reindex to move 'reinforcement trial' and 'choice_trial' columns after 'condition' key
 			df['valence_not_chosen'] = df.apply(valence_not_chosen, stim=1, axis=1)
+			df['fractal_not_chosen'] = df.apply(stim_not_chosen, stim=1, axis=1)
 		except:
 			print('   No reward magnitude column found, skipping valence assignment...')
 	# check if lick column exists
