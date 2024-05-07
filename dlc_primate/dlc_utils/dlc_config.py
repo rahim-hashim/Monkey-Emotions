@@ -74,7 +74,11 @@ def get_trial_video_list(video_dir, camera_dict):
 	"""Get list of trial videos"""
 	print('Checking for video files...')
 	print(f'  Video directory: {video_dir}')
-	trial_videos = [f.split('.')[0] for f in os.listdir(video_dir) if 'e3' in f and f.endswith('.mp4')]
+	trial_videos = [f.split('.')[0] for f in os.listdir(video_dir) if \
+			'e3' in f and \
+			f.endswith('.mp4') and \
+			'filtered' not in f and \
+			f.split('.')[0].split('_')[-1] in camera_dict.keys()]
 	print(f'  Number of videos found: {len(trial_videos)}')
 	dlc_video_path_dict = defaultdict(list)
 	for video in tqdm(trial_videos):

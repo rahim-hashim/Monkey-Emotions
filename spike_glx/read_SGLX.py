@@ -557,8 +557,8 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 				desc='Trial Number', position=0, leave=True):
 
 		trial_specified = df.iloc[trial_index_specified]
-		ml_photodiode = trial_specified['photodiode']*1000 # V to mV
-		ml_cam_save = trial_specified['cam_save']*1000 # V to mV
+		ml_photodiode = np.array(trial_specified['photodiode'])*1000 # V to mV
+		ml_cam_save = np.array(trial_specified['cam_save'])*1000 # V to mV
 
 		# if True, plot the camera save signal from ML and SpikeGLX
 		low_corr_flag = True
@@ -717,6 +717,7 @@ def align_sglx_ml(spikeglx_obj, df, epochs):
 			# plot_pd_alignment(trial_specified, sglx_analog_times_approx, sglx_analog_approx,
 			# 				sglx_trial_times, sglx_cam_framenumbers, sglx_trial_start, epochs)
 			print(f'  ML-SGLX Correlation: {round(max_corr[1], 3)}')
+		break
 	# plot correlation matrix
 	plot_spikeglx_ml_corr(correlation_matrix, 100)
 	spikeglx_obj.trial_times = sglx_trial_times
