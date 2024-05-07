@@ -10,24 +10,31 @@ import matplotlib.pyplot as plt
 from classes.Session import Session
 
 # base case, working
-def generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start, epoch_end):
+def generate_ml_behavior_frames(session_df, 
+																session_obj, 
+																trial_num, 
+																epoch_start, 
+																epoch_end, 
+																subsample=1):
 	monkey_name = session_obj.monkey
 	date = session_obj.date
 	session_name = f'{monkey_name}_{date}'
 	trial_specified = session_df[session_df['trial_num'] == trial_num]
 	trial_num_index = trial_num - 1
-	if epoch_start == 'start':
-		epoch_start = 0
-	else:
-		epoch_start = trial_specified[epoch_start].tolist()[0]
-	if epoch_end == 'end':
-		epoch_end = len(trial_specified['eye_x'].tolist()[0])
-	else:
-		epoch_end = trial_specified[epoch_end].tolist()[0]
-	print('  Frames {} to {}'.format(trial_num, epoch_start, epoch_end))
-	eye_x = trial_specified['eye_x'].tolist()[0][epoch_start:epoch_end]
-	eye_y = trial_specified['eye_y'].tolist()[0][epoch_start:epoch_end]
-	lick = trial_specified['lick'].tolist()[0][epoch_start:epoch_end]
+	
+	start_sig = 0
+	end_sig = len(trial_specified['eye_x'].tolist()[0])
+	if epoch_start != 'start':
+		start_sig = trial_specified[epoch_start].tolist()[0]
+	if epoch_end != 'end':
+		end_sig = trial_specified[epoch_end].tolist()[0]
+	print(f'  Frames {start_sig} to {end_sig}')
+
+	if subsample != 1:
+		print(f'  Subsampling Analog Data: (1000/{subsample}) fps')
+	eye_x = trial_specified['eye_x'].tolist()[0][start_sig:end_sig][::subsample]
+	eye_y = trial_specified['eye_y'].tolist()[0][start_sig:end_sig][::subsample]
+	lick = trial_specified['lick'].tolist()[0][start_sig:end_sig][::subsample]
 	
 	fig_folder_path = os.path.join(os.getcwd(), 'video', session_name, f'trial_{trial_num_index}')
 	os.makedirs(fig_folder_path, exist_ok=True)
@@ -41,7 +48,7 @@ def generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start,
 		plt.xlabel('Eye X Position')
 		plt.ylabel('Eye Y Position')
 		plt.title('Trial {}'.format(trial_num))
-		plt.savefig(os.path.join(fig_folder_path, "eye_%04d.png" % i), dpi=150)
+		plt.savefig(os.path.join(fig_folder_path, "eye_%05d.png" % i), dpi=150)
 		plt.close()
 
 		# lick
@@ -55,10 +62,11 @@ def generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start,
 		plt.savefig(os.path.join(fig_folder_path, "lick_%04d.png" % i), dpi=150)
 		plt.close()
 
-def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start, epoch_end):
+def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start, epoch_end, slowdown=1):
 
 	print('Generating video for trial {}'.format(trial_num))
-	generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start, epoch_end)
+	subsample = 10
+	generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start, epoch_end, subsample)
 
 	monkey_name = session_obj.monkey
 	date = session_obj.date
@@ -70,6 +78,7 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start,
 
 	target_folder_path = os.path.join(os.getcwd(), 'video', session_name)
 	source_folder_path = os.path.join(os.getcwd(), 'video', session_name, f'trial_{trial_num_index}')
+	print(f'  Saving Frames to {source_folder_path}')
 	for beh_measure in ['eye', 'lick']:
 		target_video_path = os.path.join(target_folder_path, beh_measure+"_%04d.mp4" % trial_num_index)
 		# delete video if it already exists
@@ -79,12 +88,15 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start,
 		print('Saving video to: {}'.format(target_video_path))
 		# Define the codec and create VideoWriter object
 		fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-		out = cv2.VideoWriter(target_video_path, fourcc, 1000, (frame_width, frame_height))
+		if slowdown != 1:
+			print(f'   Slowing Video by: {slowdown}x')
+		fps = 1000/(subsample*slowdown)
+		print(f'  FPS: {fps}')
+		out = cv2.VideoWriter(target_video_path, fourcc, fps, (frame_width, frame_height))
 		# Iterate through all the files in the folder
 		video_files = sorted(os.listdir(source_folder_path))
 		video_files_beh = [file for file in video_files if file.startswith(beh_measure)]
 		for filename in tqdm(video_files_beh, desc=f'Trial {trial_num_index} {beh_measure}'):
-			# print('  {}'.format(filename))
 			# reading each file
 			img = cv2.imread(os.path.join(source_folder_path, filename))
 			# setting the width, height of the frame

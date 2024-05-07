@@ -48,6 +48,7 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 			t_test_moving_avg(session_df_condition, session_obj, block)
 		except:
 			print('Not enough trials for condition: {}'.format(block))
+	raster_by_condition(df, session_obj)
 	
 	from analyses.grant_plots import grant_plots
 	grant_plots(df, session_obj)

@@ -464,7 +464,7 @@ def novel_fractal_exp(row):
 	"""
 	fractal_chosen = row['fractal_chosen']
 	if fractal_chosen[-1].isdigit():
-		fractal_chosen = '_fractal_E'
+		fractal_chosen = '_fractal_novel'
 	return fractal_chosen
 
 def add_fields(df, session_obj, behavioral_code_dict):
@@ -579,7 +579,7 @@ def add_fields(df, session_obj, behavioral_code_dict):
 
 	# experiments with novel stimuli only
 	try:
-		df['fractal_chosen'] = df.apply(novel_fractal_exp, axis=1)
+		df['fractal_chosen_novel'] = df.apply(novel_fractal_exp, axis=1)
 	except:
 		print('   No novel fractal column found, skipping novel fractal...')
 		pass

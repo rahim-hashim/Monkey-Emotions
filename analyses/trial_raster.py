@@ -27,12 +27,15 @@ def trial_raster(df, session_obj):
 	set_plot_params(FONT=10, AXES_TITLE=12, AXES_LABEL=10, TICK_LABEL=10, LEGEND=10, TITLE=14)
 
 	FIGURE_SAVE_PATH = session_obj.figure_path
-	FRACTAL_NAMES = df['fractal_chosen'].unique().tolist()
+	fractal_chosen_col = 'fractal_chosen'
+	if 'fractal_chosen_novel' in df.columns:
+		fractal_chosen_col = 'fractal_chosen_novel'
+	FRACTAL_NAMES = sorted(df[fractal_chosen_col].unique().tolist())
 	LABELS = session_obj.stim_labels
 	COLORS = session_obj.colors
 	BIN = 10 # for binning the data
 	POST_TRACE = 350 # time after outcome to plot
-	max_y = max(tuple(df.groupby('fractal_chosen').size())) # for labeling
+	max_y = max(tuple(df.groupby(fractal_chosen_col).size())) # for labeling
 	num_fractals = len(session_obj.stim_labels)
 
 	# f1, axarr1 = plt.subplots(2,2, figsize=(5,10), sharey = True) # lick data plot
@@ -41,7 +44,7 @@ def trial_raster(df, session_obj):
 	f2, axarr2 = plt.subplots(1,num_fractals, figsize=(20,7), sharey = True) # lick data plot
 
 	for f_index, fractal in enumerate(sorted(FRACTAL_NAMES)):
-		fractal_df = df[df['fractal_chosen'] == fractal]
+		fractal_df = df[df[fractal_chosen_col] == fractal]
 		# pos_i = ax_map_i[f_index]
 		# pos_j = ax_map_j[f_index]
 		fractal_df['block_change'] = fractal_df['block'].diff()
@@ -84,8 +87,7 @@ def trial_raster(df, session_obj):
 			lick_raster_window_index = [bin*(index+1) if bin != 0 else np.nan \
 																		for bin in lick_raster_window] # replace 0 with np.nan
 			blink_raster_window_index = [bin*(index+1) if bin != 0 else np.nan \
-																	for bin in blink_raster_window] # replace 0 with np.nan
-			
+																	for bin in blink_raster_window] # replace 0 with np.nan			
 			# axarr1[pos_i][pos_j].scatter(x_range, lick_raster_window_index, marker='|', s=3, color=COLORS[f_index])
 			# axarr2[pos_i][pos_j].scatter(x_range, blink_raster_window_index, marker='|', s=3, color=COLORS[f_index])
 			axarr1[f_index].scatter(x_range, lick_raster_window_index, marker='|', s=3, color=COLORS[f_index])

@@ -25,7 +25,7 @@ def draw_point(frame, points, colors):
 		frame = cv2.circle(frame, center, radius, color, thickness)
 	return frame
 
-def canny_detection(video_path):
+def canny_detection(trial, epochs, video_path):
 	'''
 	Applies Canny edge detection to a video file and return 
 	a new video file with the edges detected.
@@ -36,32 +36,49 @@ def canny_detection(video_path):
 	Returns:
 		new_video_path (str): The path to the new video file with the edges detected.
 	'''
+	# eye positions
+	eye_positions = list(zip(trial['eye_x'].tolist()[0],
+					   				 trial['eye_y'].tolist()[0]))
+	print(f'  Eye Positions: {len(eye_positions)}')
+	# check if video path exists
+	if not os.path.exists(video_path):
+		raise FileNotFoundError(f'Video file not found: {video_path}')
+	print(f'  Video: {video_path}')
 	cap = cv2.VideoCapture(video_path)
 	# get the frame rate of the video
 	fps = cap.get(cv2.CAP_PROP_FPS)
-	new_video_path = os.path.join(os.path.dirname(video_path), 'canny_' + os.path.basename(video_path))
-	new_video_frames = []
-	points = [(100, 100), (200, 200), (300, 300)]
-	colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+	print(f'    FPS: {fps}')
+	width = round(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+	height = round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+	print(f'    Width x Height: {width}x{height}')
+	new_video_path = os.path.join(os.path.dirname(video_path), 
+				'canny_' + os.path.basename(video_path.replace('.mp4', '.avi')))
+	# create a VideoWriter object
+	fourcc = cv2.VideoWriter_fourcc(*'XVID')
+	out = cv2.VideoWriter(new_video_path, fourcc, fps, (width, height))
+	# points = [(100, 100), (200, 200), (300, 300)]
+	# colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+	new_frames = []
+	cam_frames = trial['cam_frames'].tolist()[0]
+	print(f'    Num Frames: {len(cam_frames)}')
+	print(f'    Frames: {cam_frames[0]}-{cam_frames[-1]}')
+	frame_num = 0
 	while cap.isOpened():
 		ret, frame = cap.read()
 		if not ret:
-				break
-		# apply Canny edge detection
-		edges = cv2.Canny(frame, 75, 100)
-		# draw colored points on the canny edge frame
-		frame = draw_point(edges, points, colors)
-		# add the edges to the frame
-		new_video_frames.append(frame)
-	cap.release()
-	print(f'Number of frames: {len(new_video_frames)}')
-	# write the new video file with fps, width, and height of the original video
-	height, width = new_video_frames[0].shape
-	fourcc = cv2.VideoWriter_fourcc(*'XVID')
-	out = cv2.VideoWriter(new_video_path, fourcc, fps, (width, height))
-	for frame in new_video_frames:
+			break
+		# draw the points on the frame
+		# frame = draw_point(frame, points, colors)
+		edges = cv2.cvtColor(cv2.Canny(frame,50,100), cv2.COLOR_GRAY2BGR)
+		# print(frame_num, trial['cam_frames'].tolist()[frame_num])
+		new_frames.append(edges)
+	# write the new video file
+	for frame in new_frames:
 		out.write(frame)
+	cap.release()
 	out.release()
+	cv2.destroyAllWindows()
+	# write the new video file with fps, width, and height of the original video
 	return new_video_path
 
 if __name__ == '__main__':

@@ -27,7 +27,10 @@ def session_lick(session_df: pd.DataFrame, session_obj: Session):
   df = session_df[session_df['reinforcement_trial'] == 1]
   
   LABELS = session_obj.stim_labels
-  FRACTAL_NAMES = sorted(df['fractal_chosen'].unique().tolist())
+  fractal_chosen_col = 'fractal_chosen'
+  if 'fractal_chosen_novel' in df.columns:
+    fractal_chosen_col = 'fractal_chosen_novel'
+  FRACTAL_NAMES = sorted(df[fractal_chosen_col].unique().tolist())
   COLORS = session_obj.colors
   FIGURE_SAVE_PATH = session_obj.figure_path
   LICK_WINDOW_THRESHOLD = session_obj.window_lick
@@ -40,7 +43,7 @@ def session_lick(session_df: pd.DataFrame, session_obj: Session):
 
   for df_index, fractal in enumerate(sorted(FRACTAL_NAMES)):
 
-    df_fractal = df[df['fractal_chosen'] == fractal]
+    df_fractal = df[df[fractal_chosen_col] == fractal]
     df_fractal['block_change'] = df_fractal['condition'].diff()
     block_change = np.nonzero(df_fractal['block_change'].tolist())[0]
     # color of scatter should be the valence of the fractal
