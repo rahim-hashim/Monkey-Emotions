@@ -62,10 +62,30 @@ def generate_ml_behavior_frames(session_df,
 		plt.savefig(os.path.join(fig_folder_path, "lick_%04d.png" % i), dpi=150)
 		plt.close()
 
-def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start, epoch_end, slowdown=1):
+def generate_ml_behavior_videos(session_df, 
+																session_obj, 
+																trial_num, 
+																epoch_start, 
+																epoch_end, 
+																subsample=10, 
+																slowdown=1):
+	'''
+	Given a trial number, generate a video of the eye and lick behavior for that trial.
+
+	Parameters:
+		session_df (pd.DataFrame): The DataFrame containing the session data.
+		session_obj (Session): The Session object containing the session data.
+		trial_num (int): The trial number to generate the video for.
+		epoch_start (str): The epoch to start the video from.
+		epoch_end (str): The epoch to end the video at.
+		subsample (int): To subsample the data by a factor of `subsample` to lower frame rate (default=1).
+		slowdown (int): To slow down the video by a factor of `slowdown` (default=1).
+
+	Returns:
+		None
+	'''
 
 	print('Generating video for trial {}'.format(trial_num))
-	subsample = 10
 	generate_ml_behavior_frames(session_df, session_obj, trial_num, epoch_start, epoch_end, subsample)
 
 	monkey_name = session_obj.monkey
@@ -90,6 +110,7 @@ def generate_ml_behavior_videos(session_df, session_obj, trial_num, epoch_start,
 		fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 		if slowdown != 1:
 			print(f'   Slowing Video by: {slowdown}x')
+			target_video_path = target_video_path.replace('.mp4', f'_slow{slowdown}.mp4')
 		fps = 1000/(subsample*slowdown)
 		print(f'  FPS: {fps}')
 		out = cv2.VideoWriter(target_video_path, fourcc, fps, (frame_width, frame_height))
