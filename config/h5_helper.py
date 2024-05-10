@@ -243,9 +243,9 @@ def h5_to_df(path_obj, start_date, end_date, monkey_input, save_df):
       # parse session data
       session_dict, error_dict, behavioral_code_dict = \
         session_parser(f, trial_list, trial_record, dates_array[f_index], monkey_input)
-      # parse camera data
-      session_dict = \
-        camera_parser(f, session_dict, cam1_list, cam2_list, dates_array[f_index], monkey_input)
+      # parse ML camera data
+      # session_dict = \
+      #   camera_parser(f, session_dict, cam1_list, cam2_list, dates_array[f_index], monkey_input)
        # convert dictionary to pd.DataFrame
       session_df_new = pd.DataFrame.from_dict(session_dict)
       # session_obj contains session metadata

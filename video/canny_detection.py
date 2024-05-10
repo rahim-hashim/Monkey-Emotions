@@ -71,7 +71,9 @@ def canny_detection(trial,
 	colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 	new_frames = []
 	cam_frames = trial['cam_frames'].tolist()[0]
-	print(f'    Num Frames: {len(cam_frames)}')
+	print(f'    Num Frames (cam_frames): {len(cam_frames)}')
+	# print number of frames in video
+	print(f'    Num Frames (video): {cap.get(cv2.CAP_PROP_FRAME_COUNT)}')
 	print(f'    Frames: {cam_frames[0]}-{cam_frames[-1]}')
 	frame_num = 0
 	while cap.isOpened():
