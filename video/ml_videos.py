@@ -21,20 +21,19 @@ def generate_ml_behavior_frames(session_df,
 	session_name = f'{monkey_name}_{date}'
 	trial_specified = session_df[session_df['trial_num'] == trial_num]
 	trial_num_index = trial_num - 1
-	
-	start_sig = 0
-	end_sig = len(trial_specified['eye_x'].tolist()[0])
+	print('  Number of Frames: {}'.format(len(trial_specified['cam_frames'].tolist()[0])))
+	start_analog_time = 0
+	end_analog_time = len(trial_specified['eye_x'].tolist()[0])
 	if epoch_start != 'start':
-		start_sig = trial_specified[epoch_start].tolist()[0]
+		start_analog_time = trial_specified[epoch_start].tolist()[0]
 	if epoch_end != 'end':
-		end_sig = trial_specified[epoch_end].tolist()[0]
-	print(f'  Frames {start_sig} to {end_sig}')
-
+		end_analog_time = trial_specified[epoch_end].tolist()[0]
+	print(f'  Parsing Analog Data: Epochs {start_analog_time} to {end_analog_time}')
 	if subsample != 1:
 		print(f'  Subsampling Analog Data: (1000/{subsample}) fps')
-	eye_x = trial_specified['eye_x'].tolist()[0][start_sig:end_sig][::subsample]
-	eye_y = trial_specified['eye_y'].tolist()[0][start_sig:end_sig][::subsample]
-	lick = trial_specified['lick'].tolist()[0][start_sig:end_sig][::subsample]
+	eye_x = trial_specified['eye_x'].tolist()[0][start_analog_time:end_analog_time][::subsample]
+	eye_y = trial_specified['eye_y'].tolist()[0][start_analog_time:end_analog_time][::subsample]
+	lick = trial_specified['lick'].tolist()[0][start_analog_time:end_analog_time][::subsample]
 	
 	fig_folder_path = os.path.join(os.getcwd(), 'video', session_name, f'trial_{trial_num_index}')
 	os.makedirs(fig_folder_path, exist_ok=True)
