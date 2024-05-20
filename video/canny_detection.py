@@ -84,7 +84,7 @@ def canny_detection(trial,
 		# convert to RGB
 		edges = cv2.cvtColor(edges, cv2.COLOR_BGR2RGB)
 		# draw the point
-		edges = draw_point(edges, points, colors)
+		# edges = draw_point(edges, points, colors)
 		new_frames.append(edges)
 	# write the new video file
 	for frame in new_frames:
