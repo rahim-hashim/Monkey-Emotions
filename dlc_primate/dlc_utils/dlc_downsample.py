@@ -1,4 +1,5 @@
 import cv2
+from tqdm import tqdm
 import deeplabcut
 from PIL import Image
 
@@ -23,7 +24,7 @@ def downsample_videos(video_path_list):
 	print('Downsampling videos...')
 	downsampled_video_path_list = []
 	for video_path in tqdm(video_path_list):
-		video_path = deeplabcut.DownSampleVideo(video_path, width=300)
+		video_path = deeplabcut.DownSampleVideo(video_path, width=640)
 		downsampled_video_path_list.append(video_path)
 	print('Done downsampling videos')
 	return downsampled_video_path_list
