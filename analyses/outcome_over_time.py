@@ -22,9 +22,12 @@ def outcome_over_time(df, session_obj):
 	Plots the average number of blinks and licks over a session
 	"""
 	FIGURE_SAVE_PATH = session_obj.figure_path
-	avg_window = 10 # N trial rolling avg
+	avg_window = 5 # N trial rolling avg
 	f, axarr = plt.subplots(3, 1, sharey=False, figsize=(16, 11))
 	df_reinforcement = df[df['reinforcement_trial'] == 1]
+	# find the minimum number of trials for each valence for each block
+	block_1_min = df_reinforcement[df_reinforcement['block'] == 1].groupby('valence').size().min()
+	block_2_min = df_reinforcement[df_reinforcement['block'] == 2].groupby('valence').size().min()
 	for v_index, valence in enumerate(sorted(df_reinforcement['valence'].unique(), reverse=True)):
 		df_valence = df_reinforcement[df_reinforcement['valence'] == valence]
 		lick_dict = defaultdict(lambda: defaultdict(list))
@@ -47,9 +50,9 @@ def outcome_over_time(df, session_obj):
 			color=session_obj.valence_colors[valence]
 			x_range = np.arange(0, len(measure_array))+avg_window
 			axarr[m_index].plot(x_range, measure_array, color=color, label=valence, lw=3)
-			axarr[m_index].axhline(y=np.nanmean(measure_array), color=color, linestyle='--', alpha=0.3)
+			axarr[m_index].axhline(y=np.nanmean(measure_array)+avg_window, color=color, linestyle='--', alpha=0.3)
 			if v_index == 0:
-				axarr[m_index].axvline(x=len(measure_array_1)+avg_window, color='gold', alpha=0.75)
+				axarr[m_index].axvline(x=len(measure_array_1), color='gold', alpha=0.75)
 	xticklabels = np.arange(avg_window, len(measure_array)+avg_window, avg_window)
 	axarr[0].set_ylim([0, 1])
 	axarr[0].set_xticks(xticklabels, xticklabels, fontsize=16)

@@ -33,7 +33,7 @@ def session_performance(df, behavioral_code_dict, session_obj, latency=True):
   # correct_moving_average = np.array(df_moving_avg['correct_list_moving_avg'])
   # window_size = round_up_to_odd(int(len(correct_moving_average)/15))
   # y = signal.savgol_filter(correct_moving_average, int(window_size), poly_order)
-  num_rolling = 10
+  num_rolling = 5
   y = moving_avg(correct_list_filtered, num_rolling)
   x = list(range(len(y)))
   

@@ -43,6 +43,9 @@ def plot_heatmap_choice_valence(df, session_obj, ):
   # only get choice trials that are non-zero valence
   df_choice = df[(df['choice_trial'] == 1) & \
                  (df['fractal_count_in_block'] > 5)]
+  if len(df_choice) == 0:
+    print('No choice trials to plot.')
+    return
   # get unique conditions
   f, axarr = plt.subplots(2,2)
   cmap = plt.cm.RdYlGn
@@ -109,6 +112,9 @@ def plot_avg_choice_valence(session_df_correct, session_obj):
   """
   FIGURE_SAVE_PATH = session_obj.figure_path
   session_df_choice = session_df_correct[session_df_correct['choice_trial'] == 1]
+  if len(session_df_choice) == 0:
+    print('No choice trials to plot.')
+    return
   # session_df_choice = session_df_choice[session_df_choice['valence'] != 0]
   # see how many times the monkey chose the fractal with the higher valence
   correct_choice_trials = [1 if session_df_choice['valence'].iloc[i] == np.max([session_df_choice['valence_1'].iloc[i], session_df_choice['valence_2'].iloc[i]], axis=0) else 0 for i in range(len(session_df_choice))]

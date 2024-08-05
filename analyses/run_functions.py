@@ -30,8 +30,8 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 	# from analyses.session_timing import plot_session_timing
 	# plot_session_timing(df, session_obj)
 
-	from analyses.outcome_plots import outcome_plots
-	outcome_plots(df, session_obj)
+	# from analyses.outcome_plots import outcome_plots
+	# outcome_plots(df, session_obj)
 
 	from analyses.session_lick import session_lick
 	session_lick(df, session_obj)

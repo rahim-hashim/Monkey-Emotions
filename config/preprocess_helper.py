@@ -75,6 +75,9 @@ def preprocess_data(path_obj, start_date, end_date, monkey_input, experiment_nam
     all_selected_dates = h5_helper.date_selector(start_date, end_date)
     target_dir = os.listdir(path_obj.target_path)
     pkl_files_selected, dates_array = h5_helper.file_selector(target_dir, all_selected_dates, monkey_input)
+    if not pkl_files_selected:
+      print('No files selected. Check dates or reprocess data.')
+      sys.exit()
     print('Pickled Files:')
     pprint(pkl_files_selected, indent=2)
     for f_index, f in enumerate(pkl_files_selected):
@@ -104,7 +107,7 @@ def preprocess_data(path_obj, start_date, end_date, monkey_input, experiment_nam
                                   combine_dates=combine_dates) # True will combine all dates into analysis
   except:
     print('Fractal images upload error...')
-    print('\n  No figure save path')
+    print('  No figure save path')
     FIGURE_SAVE_PATH = None
   session_obj.save_paths(path_obj.target_path, 
                           path_obj.tracker_path, 
