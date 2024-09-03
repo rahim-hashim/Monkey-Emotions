@@ -40,6 +40,7 @@ def print_performance(session_df):
 
   session_df_choice = session_df_cs_on[session_df_cs_on['choice_trial'] == 1]
   correct_choice_trials = session_df_choice[session_df_choice['correct'] == 1]
+  # correct_choice_trials = correct_choice_trials[correct_choice_trials['fractal_count_in_block'] > 10]
 
   # Choice Trial Calculation
   print(f' Percent successful choice trials: {round(len(correct_choice_trials)/len(session_df_choice), 3)} ({len(correct_choice_trials)}/{len(session_df_choice)})')
@@ -59,6 +60,7 @@ def print_performance(session_df):
 
   # Left-Right Choice Calculation
   session_df_choice_correct = session_df_choice[session_df_choice['correct'] == 1]
+  # session_df_choice_correct = session_df_choice[session_df_choice['fractal_count_in_block'] > 5]
   session_df_choice_left = session_df_choice_correct[session_df_choice_correct['valence'] == session_df_choice_correct['valence_1']]
   session_df_choice_right = session_df_choice_correct[session_df_choice_correct['valence'] == session_df_choice_correct['valence_2']]
   print(f' Percent left choice trials: {round(len(session_df_choice_left)/len(session_df_choice_correct), 3)} ({len(session_df_choice_left)}/{len(session_df_choice_correct)})')

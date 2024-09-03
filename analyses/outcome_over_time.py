@@ -26,8 +26,6 @@ def outcome_over_time(df, session_obj):
 	f, axarr = plt.subplots(3, 1, sharey=False, figsize=(16, 11))
 	df_reinforcement = df[df['reinforcement_trial'] == 1]
 	# find the minimum number of trials for each valence for each block
-	block_1_min = df_reinforcement[df_reinforcement['block'] == 1].groupby('valence').size().min()
-	block_2_min = df_reinforcement[df_reinforcement['block'] == 2].groupby('valence').size().min()
 	for v_index, valence in enumerate(sorted(df_reinforcement['valence'].unique(), reverse=True)):
 		df_valence = df_reinforcement[df_reinforcement['valence'] == valence]
 		lick_dict = defaultdict(lambda: defaultdict(list))

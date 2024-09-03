@@ -199,6 +199,29 @@ def trial_in_block(df):
 		count += 1
 	return trial_block_count
 
+def correct_trial_in_block(df):
+	"""
+	Counts the correct trial number in a block
+
+		Args:
+			df: session_df DataFrame
+			
+		Returns:
+			correct_trial_block_count: list of trial block count
+	"""
+	count = 0
+	correct_trial_block_count = []
+	for t_index in range(len(df)): # off by 1 because len = max(t_index) + 1
+		if t_index == 0:
+			pass 											 # skipping the first index corrects the offset
+		else:
+			if df['block'].iloc[t_index] != df['block'].iloc[t_index-1]:
+				count = 0
+		correct_trial_block_count.append(count)
+		if df['correct'].iloc[t_index] == True:
+			count += 1
+	return correct_trial_block_count
+
 def fractal_in_block(df):
 	"""
 	Counts the number of times the fractal was presented in a block
@@ -500,6 +523,7 @@ def add_fields(df, session_obj, behavioral_code_dict):
 	df['DEM_raster'] = df.apply(DEM_window, axis=1)
 	df['trial_bins'] = df.apply(trial_bins, axis=1)
 	df['trial_in_block'] = trial_in_block(df)
+	df['correct_trial_in_block'] = correct_trial_in_block(df)
 	# df = outcome_back_counter(df)
 	try:
 		df = df.apply(outcome_count_window,
