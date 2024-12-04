@@ -123,41 +123,42 @@ def write_to_excel(df, session_obj, path_obj, verbose=False):
 	wb = load_workbook(filename = EXCEL_PATH)
 	ws = wb['Data']
 	headers = read_header(ws)
-	date = df['date'].unique()[0]
-	session_num = int(session_obj.session_num) + 1
-	dates, sessions = clean_rows(ws, headers)
-	if verbose:
-		print(' Dates in {}:'.format(excel_path_file))
-		print(indent(pformat(dates), '  '))
-	date_str, weekday_str = calculate_date(date)
-	session_task_num = '_'.join([date_str, session_obj.monkey, session_obj.task, str(session_num)])
-	if session_task_num not in sessions:
-		print('  Writing {} to {}'.format(date, excel_path_file))
-		start_datetime = df['trial_datetime_start'].iloc[0]
-		end_datetime = df['trial_datetime_end'].iloc[-1]
-		session_time = session_obj.session_length
-		total_attempts_min = session_obj.total_attempts_min
-		perc_initiated = session_obj.prop_trials_initiated
-		perc_correct = session_obj.prop_correct_CS_on
-		reward_list, airpuff_list = outcome_params(session_obj)
-		lick_valence_list, DEM_valence_list, blink_valence_list = behavior_summary(df, session_obj)
-		behavior_values = [date_str, 
-								weekday_str,
-								session_obj.monkey,
-								session_obj.task,
-								session_num,
-								start_datetime.time(),
-								end_datetime.time(),
-								session_time,
-								len(df),
-								np.sum(df['correct']),
-								total_attempts_min,
-								perc_initiated,
-								perc_correct]
-		all_data = behavior_values + \
-							reward_list + airpuff_list + \
-							lick_valence_list + DEM_valence_list
-		ws.append(all_data)
+	for date in df['date'].unique():
+		df_date = df[df['date'] == date]
+		session_num = int(session_obj.session_num) + 1
+		dates, sessions = clean_rows(ws, headers)
+		if verbose:
+			print(' Dates in {}:'.format(excel_path_file))
+			print(indent(pformat(dates), '  '))
+		date_str, weekday_str = calculate_date(date)
+		session_task_num = '_'.join([date_str, session_obj.monkey, session_obj.task, str(session_num)])
+		if session_task_num not in sessions:
+			print('  Writing {} to {}'.format(date, excel_path_file))
+			start_datetime = df_date['trial_datetime_start'].iloc[0]
+			end_datetime = df_date['trial_datetime_end'].iloc[-1]
+			session_time = session_obj.session_length
+			total_attempts_min = session_obj.total_attempts_min
+			perc_initiated = session_obj.prop_trials_initiated
+			perc_correct = session_obj.prop_correct_CS_on
+			reward_list, airpuff_list = outcome_params(session_obj)
+			lick_valence_list, DEM_valence_list, blink_valence_list = behavior_summary(df_date, session_obj)
+			behavior_values = [date_str, 
+									weekday_str,
+									session_obj.monkey,
+									session_obj.task,
+									session_num,
+									start_datetime.time(),
+									end_datetime.time(),
+									session_time,
+									len(df_date),
+									np.sum(df_date['correct']),
+									total_attempts_min,
+									perc_initiated,
+									perc_correct]
+			all_data = behavior_values + \
+								reward_list + airpuff_list + \
+								lick_valence_list + DEM_valence_list
+			ws.append(all_data)
 		wb.save(EXCEL_PATH)
 
 

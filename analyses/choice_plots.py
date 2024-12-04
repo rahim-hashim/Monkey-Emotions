@@ -10,7 +10,7 @@ def update_choice_matrix(choice_matrix, valences, df):
         choice_matrix[v_1_index][v_2_index] = np.nan
         continue
       df_valence_1 = df[(df['valence_1'] == valence_1) &
-                            (df['valence_2'] == valence_2) & 
+                         (df['valence_2'] == valence_2) & 
                             (df['valence'] == valence_1)]
       df_valence_2 = df[(df['valence_1'] == valence_1) &
                             (df['valence_2'] == valence_2) &
@@ -37,7 +37,7 @@ def generate_ideal_matrix(choice_matrix, valences):
 
   return choice_matrix
 
-def plot_heatmap_choice_valence(df, session_obj, ):
+def plot_heatmap_choice_valence(df, session_obj):
   '''heat map of choice trials'''
   trial_count_block = [45, 90, 125, 200]
   FIGURE_SAVE_PATH = session_obj.figure_path
@@ -66,7 +66,12 @@ def plot_heatmap_choice_valence(df, session_obj, ):
     # get unique conditions
     conditions = list(sorted(df_choice['condition'].unique()))
     f, axarr = plt.subplots(1, len(conditions)+2, figsize=(15, 5))
-    f.suptitle(f'Probability of Choosing Stimulus L/U (n < {count} trials in block)', fontsize=18)
+    if c_index == 0:
+      f.suptitle(f'Probability of Choosing Stimulus L/U (< {trial_count_block[c_index]} trials in block)', fontsize=18)
+    elif c_index < len(trial_count_block) - 1:
+      f.suptitle(f'Probability of Choosing Stimulus L/U ({trial_count_block[c_index-1]} - {count} trials in block)', fontsize=18)
+    else:
+      f.suptitle(f'Probability of Choosing Stimulus L/U (all trials)', fontsize=18)
     cmap = plt.cm.RdYlGn
     cmap.set_bad(color='white')  
     # get unique valences
@@ -99,20 +104,17 @@ def plot_heatmap_choice_valence(df, session_obj, ):
       axarr[col].set_title(title, fontsize=14)
 
       # legend for color bar
-      axarr[col].set_xlabel('Stimulus L/U', fontsize=12)
-      axarr[col].set_ylabel('Stimulus R/D', fontsize=12)
+      if col == 0:
+        axarr[col].set_xlabel('Stimulus L/U', fontsize=12)
+        axarr[col].set_ylabel('Stimulus R/D', fontsize=12)
       axarr[col].set_xticks(range(len(valences)))
       axarr[col].set_yticks(range(len(valences)))
       valence_labels = [session_obj.valence_labels[valence] for valence in valences]
       axarr[col].set_xticklabels(valence_labels, fontsize=8)
       axarr[col].set_yticklabels(valence_labels, fontsize=8)
-    if c_index == 0:
-      f.suptitle(f'Probability of Choosing Stimulus L/U (n < {count} trials in block)', fontsize=18)
-    else:
-      f.suptitle(f'Probability of Choosing Stimulus L/U ({trial_count_block[c_index-1]} - {count} trials in block)', fontsize=18)
-    f.tight_layout()
     plot_title = f'choice_heatmap_{count}.svg'
     img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
+    plt.tight_layout()
     f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
     print(f'  {plot_title} saved.')
 
@@ -158,7 +160,12 @@ def plot_avg_choice_valence(session_df_correct, session_obj):
     scatter_colors_1 = [color_dict[valence] for valence in session_df_choice['valence']]
     ax.scatter(x, [1.1]*len(x), s=8, c=scatter_colors_1)
     # make column for not chosen valence
-    valence_other = [session_df_choice['valence_2'].iloc[i] if session_df_choice['valence_1'].iloc[i] == session_df_choice['valence'].iloc[i] else session_df_choice['valence_1'].iloc[i] for i in range(len(session_df_choice))]
+    valence_other = [
+      session_df_choice['valence_2'].iloc[i] \
+      if session_df_choice['valence_1'].iloc[i] == session_df_choice['valence'].iloc[i] \
+      else session_df_choice['valence_1'].iloc[i] \
+      for i in range(len(session_df_choice))
+    ]
     session_df_choice['not_chosen_fractal'] = valence_other
     scatter_colors_2 = [color_dict[valence] for valence in session_df_choice['not_chosen_fractal']]
     ax.scatter(x, [-0.1]*len(x), s=2, c=scatter_colors_2)

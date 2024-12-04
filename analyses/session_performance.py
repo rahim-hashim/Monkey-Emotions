@@ -88,30 +88,30 @@ def session_performance(df, behavioral_code_dict, session_obj, latency=True):
 
   # latency
   if latency == True:
-    trial_absolute_start = df['trial_datetime_start']
-    # extract hours, minutes, and seconds from datetime
-    trial_hour = trial_absolute_start.dt.hour * 60 * 60
-    trial_minute = trial_absolute_start.dt.minute * 60
-    trial_second = trial_absolute_start.dt.second 
-    # add together
-    trial_absolute_start = trial_hour + trial_minute + trial_second
-    df['latency'] = np.diff(trial_absolute_start, prepend=trial_absolute_start.iloc[0])/1000
-    latency = df['latency'].rolling(5).mean()
-    y = signal.savgol_filter(latency, 31, 5)
-    f, ax = plt.subplots(1, figsize=(20,5))
-    plt.plot(range(len(latency)), y)
-    blocks = list(map(int, df['block']))
-    new_blocks = np.diff(blocks,prepend=blocks[0])
-    block_lines = list(np.nonzero(new_blocks)[0])
-    for block in block_lines:
-      ax.axvline(x=block, c='lightgrey', linestyle='-')
-    plt.title(title_str)
-    plot_title_str = 'session_latency.png' 
-    img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title_str)
-    print(f'  {plot_title_str} saved.')
-    plt.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1)
-    plt.ylabel('Latency')
-    plt.xlabel('Trial Number')
-    plt.show()
+    for date in df['date'].unique():
+      session_df_date = df[df['date'] == date]
+      trial_absolute_start = session_df_date['trial_datetime_start'] + pd.to_timedelta(session_df_date['Fixation Success'])
+      # extract hours, minutes, and seconds from datetime
+      trial_hour = trial_absolute_start.dt.hour * 60 * 60
+      trial_minute = trial_absolute_start.dt.minute * 60
+      trial_second = trial_absolute_start.dt.second 
+      # add together
+      trial_absolute_start = trial_hour + trial_minute + trial_second
+      session_df_date['latency'] = np.diff(trial_absolute_start, prepend=trial_absolute_start.iloc[0])/1000
+      latency = session_df_date['latency'].rolling(5).mean()
+      # get rolling average of latency
+      f, ax = plt.subplots(1, 1, figsize=(11, 4))
+      x = np.arange(len(latency))
+      ax.plot(x, latency, label='Latency', linewidth=2, alpha=0.75)
+      ax.set_xlabel('Trial #', fontsize=8)
+      ax.set_ylabel('Latency (s)', fontsize=8)
+      ax.set_title(f'{date}', fontsize=12)
+      plt.tight_layout()
+      # save figure
+      plot_title = f'latency_{date}.svg'
+      img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
+      # transparent background
+      f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
+      print(f'  {plot_title} saved.')
 
 # def perf_by_fractal(session_df, behavioral_code_dict, colors, FIGURE_SAVE_PATH):

@@ -120,6 +120,7 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		dictionary containing all specified session data
 	'''
 	session_dict = defaultdict(list)
+	uservar_dict = defaultdict(list)
 
 	# date (and handling for multiple sessions)
 	session_dict['date'] = date_input
@@ -163,6 +164,14 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 		pass
 
 	# TrialRecord.User fields (reinforcement)
+	print('Parsing UserVar data...')
+	recursive_h5py_parser(uservar_dict, trial_record)
+	# print all nested keys in uservar_dict
+	for key in uservar_dict.keys():
+		print(key)
+		for subkey in uservar_dict[key]:
+			print('  ', subkey)
+
 	if trial_record != None and 'reward_stim_1' not in trial_record['User'].keys():
 		try:
 			stim_container = trial_record['User']['stim_list']

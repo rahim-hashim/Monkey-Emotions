@@ -17,7 +17,7 @@ def load_sglx(session_df,
   pickle_flag = False
   monkey_name = session_obj.monkey.lower()
   date_str = session_obj.date
-  session_folder = os.path.join('_data', f'{monkey_name}_{date_str}')
+  session_folder = os.path.join('_data', session_obj.monkey, f'{monkey_name}_{date_str}')
   if not os.path.exists(session_folder):
     os.makedirs(session_folder)
     # get full path to session folder

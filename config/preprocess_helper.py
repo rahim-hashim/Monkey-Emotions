@@ -108,11 +108,11 @@ def preprocess_data(path_obj, start_date, end_date, monkey_input, experiment_nam
   except:
     print('Fractal images upload error...')
     print('  No figure save path')
-    FIGURE_SAVE_PATH = None
+    FIGURE_SAVE_PATH = path_obj.figure_path
   session_obj.save_paths(path_obj.target_path, 
-                          path_obj.tracker_path, 
-                          path_obj.video_path,
-                          FIGURE_SAVE_PATH)  
+                         path_obj.tracker_path, 
+                         path_obj.video_path,
+                         FIGURE_SAVE_PATH)  
   
   # add external camera data
   # session_df, session_obj = add_external_cameras(session_df, session_obj)  

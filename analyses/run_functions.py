@@ -63,8 +63,10 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 	outcome_over_time(df, session_obj)
 
 	from analyses.choice_plots import plot_heatmap_choice_valence, plot_avg_choice_valence
-	plot_heatmap_choice_valence(df, session_obj)
-	plot_avg_choice_valence(df, session_obj)
+	# remove valence_1 == 0 and valence_2 == 0
+	df_choice = df[(df['valence_1'] != 0) & (df['valence_2'] != 0)]
+	plot_heatmap_choice_valence(df_choice, session_obj)
+	plot_avg_choice_valence(df_choice, session_obj)
 
 	from analyses.log_reg  import log_reg_model
 	log_reg_model(df)
