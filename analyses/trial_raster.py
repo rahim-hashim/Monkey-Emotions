@@ -51,11 +51,11 @@ def trial_raster(df, session_obj):
 		block_change_trials = np.nonzero(fractal_df['block_change'].tolist())[0]
 		block_change = -1
 		if len(block_change_trials) > 1:
-			block_change = np.nonzero(fractal_df['block_change'].tolist())[0][1]
-			# axarr1[pos_i][pos_j].axhline(y=block_change+1, c='darkred', alpha=0.5)
-			# axarr2[pos_i][pos_j].axhline(y=block_change+1, c='darkred', alpha=0.5)
-			axarr1[f_index].axhline(y=block_change+1, c='darkred', alpha=0.5)
-			axarr2[f_index].axhline(y=block_change+1, c='darkred', alpha=0.5)
+			for block_change in np.nonzero(fractal_df['block_change'].tolist())[0][1:]:
+				# axarr1[pos_i][pos_j].axhline(y=block_change+1, c='darkred', alpha=0.5)
+				# axarr2[pos_i][pos_j].axhline(y=block_change+1, c='darkred', alpha=0.5)
+				axarr1[f_index].axhline(y=block_change+1, c='darkred', alpha=0.5)
+				axarr2[f_index].axhline(y=block_change+1, c='darkred', alpha=0.5)
 		for index in range(len(fractal_df)+1):
 			i = index
 			# Make blank row for block change

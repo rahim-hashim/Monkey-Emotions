@@ -44,7 +44,7 @@ def session_lick(session_df: pd.DataFrame, session_obj: Session):
   for df_index, fractal in enumerate(sorted(FRACTAL_NAMES)):
 
     df_fractal = df[df[fractal_chosen_col] == fractal]
-    df_fractal['block_change'] = df_fractal['condition'].diff()
+    df_fractal['block_change'] = df_fractal['block'].diff()
     block_change = np.nonzero(df_fractal['block_change'].tolist())[0]
     # color of scatter should be the valence of the fractal
     valence_color = [VALENCE_COLORS[trial] for trial in df_fractal['valence']]

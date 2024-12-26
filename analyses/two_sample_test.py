@@ -193,10 +193,11 @@ def two_sample_test(data_type, df, data_raster, condition, session_obj, directio
 	f.suptitle(title_full.title() + ' (Condition {})'.format(condition))
 
 	f.tight_layout()
-	plot_title = 't_test_{}_{}.png'.format(data_type, condition)
-	img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
-	f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1)
-	print('  {} saved.'.format(plot_title))
+	if FIGURE_SAVE_PATH:
+		plot_title = 't_test_{}_{}.png'.format(data_type, condition)
+		img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
+		f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1)
+		print('  {} saved.'.format(plot_title))
 	plt.show()
 	plt.close('all')
 

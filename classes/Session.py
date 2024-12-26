@@ -33,11 +33,17 @@ class Session:
 		self.window_blink = 1300
 		self.colors = []
 		self.stim_labels = []
-		self.valence_colors = {1.0: '#28398D', 0.75: '#308ED6', # dark blue, blue,
-			 										0.5: '#91BFBC', 0.25: '#9FC5E8', # light blue, lighter blue,
-													0: '#B0B0B0', # gray
-													-0.5: '#ED8C8C', -1.0: '#D61313', # red, dark red
-													} 
+		self.valence_colors = {
+			2.0:  '#452C49', # purple
+			1.0: 	'#28398D', # darkest blue
+			0.75: '#308ED6', # dark blue
+			0.5: 	'#91BFBC', # lighter blue
+			0.25: '#9FC5E8', # lightest blue
+			0: 		'#B0B0B0', # gray
+			-0.5: '#ED8C8C', # light red
+			-1.0: '#D61313', # dark red
+			-2.0: '#8C0000'  # darkest red
+		} 
 		self.valence_labels = defaultdict(str)
 		self.session_num = 0						# can be multiple sessions per monkey per day
 		self.session_length = 0					# length of each session in seconds
@@ -76,7 +82,7 @@ class Session:
 		first_10_lick = self.df['lick'].iloc[:10].tolist()
 		first_10_lick = max([item for sublist in first_10_lick for item in sublist])
 		self.lick_threshold = np.round(first_10_lick * 0.75, 2)
-		print('Lick threshold: {} mV'.format(self.lick_threshold))
+		print('  Lick threshold: {} mV'.format(self.lick_threshold))
 
 	def parse_stim_labels(self):
 		"""Get the unique fractal labels for each session"""

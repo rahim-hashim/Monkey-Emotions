@@ -191,10 +191,7 @@ def raster_binary_valence(session_df, behavioral_code_dict, error_dict, session_
 	axarr[2][2].set_title('Delay\n(last {}ms)'.format(WINDOW_THRESHOLD_LICK))
 
 	condition = list(session_df['condition'].unique())[0]
-	if condition == 1:
-		title = 'Pre-Reversal'
-	if condition == 2:
-		title = 'Post-Reversal'
+	title = f'Block {condition}'
 	axarr[0][0].set_title(title, pad=25, fontsize=40)
 	axarr[0][0].set_xlabel('Time since visual stimuli onset (ms)', fontsize=26)
 

@@ -75,9 +75,8 @@ def raster_by_condition(session_df, session_obj):
 	set_plot_params(FONT=20, AXES_TITLE=22, AXES_LABEL=20, TICK_LABEL=20, LEGEND=16, TITLE=28)
 
 	PRE_CS = 50 # time before CS-on (for moving average calculation)
-	FIGURE_SAVE_PATH = session_obj.figure_path
 	COLORS = session_obj.valence_colors
-	WINDOW_THRESHOLD_LICK = session_obj.window_lick
+	WINDOW_THRESHOLD_LICK = 1300
 	WINDOW_THRESHOLD_BLINK = session_obj.window_blink
 
 	# keys = each valence, values = list of lick/blink probability data
@@ -92,21 +91,24 @@ def raster_by_condition(session_df, session_obj):
 
 	gs_kw = dict(width_ratios=[5, 1, 1])
 	f, axarr = plt.subplots(3,3, gridspec_kw=gs_kw, sharey = False, figsize=(50,20))
+	# set font to Optima for all subplots
+	for ax in axarr.flat:
+		for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+			label.set_fontname('Optima')
+		ax.title.set_fontname('Optima')
 	num_fractals = len(session_df['valence'].unique())	
 
-	TRIAL_THRESHOLD = 3
+	TRIAL_THRESHOLD = 0
 
 	# only reinforcement trials
 	session_df_reinforcement = session_df[session_df['reinforcement_trial'] == 1]
 	# only include trials after subject has seen fractal <TRIAL_THRESHOLD> number of times
 	session_df_count = session_df_reinforcement[session_df_reinforcement['fractal_count_in_block'] > TRIAL_THRESHOLD]
-	# only include one switch (for now)
-	session_df_threshold = session_df_count[session_df_count['block'] <= 2]
 
 	# calculate minimum epoch times
-	cs_time_min, trace_time_min, outcome_time_min = epoch_time(session_df_threshold)
+	cs_time_min, trace_time_min, outcome_time_min = epoch_time(session_df_count)
 
-	valence_list = sorted(session_df_threshold['valence'].unique(), reverse=True)
+	valence_list = sorted(session_df_count['valence'].unique(), reverse=True)
 	LABELS = []
 	color_list = [COLORS[valence] for valence in valence_list]
 	for df_index, valence in enumerate(valence_list):
@@ -121,7 +123,7 @@ def raster_by_condition(session_df, session_obj):
 		DEM_epoch_dict = defaultdict(lambda:defaultdict(list))	
 		pupil_epoch_dict = defaultdict(lambda:defaultdict(list))
 
-		df = session_df_threshold[session_df_threshold['valence'] == valence]
+		df = session_df_count[session_df_count['valence'] == valence]
 
 		# valence-specific session lick/blink data
 		lick_data_raster = df['lick_raster'].tolist()
@@ -230,20 +232,29 @@ def raster_by_condition(session_df, session_obj):
 		axarr[2][0].plot(range(len(y3)), y3, 
 										color=color_list[df_index], label=label, linewidth=4)
 
-	axarr[0][0].text(0, 1.15, 'CS On', ha='center', va='center', fontsize='x-large')
-	axarr[0][0].text(cs_time_min, 1.15, 'Delay', ha='center', va='center', fontsize='x-large')
-	axarr[0][0].text(trace_time_min, 1.15, 'Outcome', ha='center', va='center', fontsize='x-large')
-	axarr[0][0].set_ylabel('Probability of Lick', fontsize='x-large')
-	axarr[0][0].set_ylim([0, 1.05])
-	axarr[0][0].set_yticks(np.arange(0,1.2,0.2).round(1))
-	axarr[0][0].set_yticklabels(np.arange(0,1.2,0.2).round(1))
+	axarr[0][0].text(0, 1.15, 'CS On', ha='center', va='center', fontsize=40,  font='Optima')
+	axarr[0][0].text(cs_time_min, 1.15, 'Delay', ha='center', va='center', fontsize=40, font='Optima')
+	axarr[0][0].text(trace_time_min, 1.15, 'Outcome', ha='center', va='center', fontsize=40, font='Optima')
+	axarr[0][0].set_ylabel('Probability of Lick', fontsize=50,  font='Optima')
+	axarr[0][0].set_ylim([0, 1.1])
+	axarr[0][0].set_yticks(np.arange(0,1.5,0.5).round(1))
+	axarr[0][0].set_yticklabels(np.arange(0,1.5,0.5).round(1), font='Optima', fontsize=40, )
 	# xticks
-	axarr[0][0].set_xticks(np.arange(0,4500, 500))
-	axarr[0][0].set_xticklabels(np.arange(0,4500, 500))
-	axarr[1][0].set_xticks(np.arange(0,4500, 500))
-	axarr[1][0].set_xticklabels(np.arange(0,4500, 500))
-	axarr[2][0].set_xticks(np.arange(0,4500, 500))
-	axarr[2][0].set_xticklabels(np.arange(0,4500, 500))
+	axarr[0][0].set_xlim([0, 3200])
+	axarr[0][0].set_xticks(np.arange(0,4000, 500))
+	axarr[0][0].set_xticklabels(np.arange(0,4000, 500), font='Optima', fontsize=40, )
+	axarr[1][0].set_xlim([0, 3200])
+	axarr[1][0].set_xticks(np.arange(0,4000, 500))
+	axarr[1][0].set_xticklabels(np.arange(0,4000, 500), font='Optima', fontsize=40, )
+	axarr[1][0].set_ylim([0, 1.1])
+	axarr[1][0].set_yticks(np.arange(0,1.5,0.5).round(1))
+	axarr[1][0].set_yticklabels(np.arange(0,1.5,0.5).round(1), font='Optima', fontsize=40, )
+	axarr[2][0].set_xlim([0, 3200])
+	axarr[2][0].set_xticks(np.arange(0,4000, 500))
+	axarr[2][0].set_xticklabels(np.arange(0,4000, 500), font='Optima', fontsize=40, )
+	axarr[2][0].set_ylim([0, 1.1])
+	axarr[2][0].set_yticks(np.arange(0,1.5,0.5).round(1))
+	axarr[2][0].set_yticklabels(np.arange(0,1.5,0.5).round(1), font='Optima', fontsize=40, )
 	# lick
 	axarr[0][1].set_title('Delay\n(last {}ms)'.format(WINDOW_THRESHOLD_LICK))
 	axarr[0][2].set_title('Delay\n(last {}ms)'.format(WINDOW_THRESHOLD_LICK))
@@ -260,14 +271,12 @@ def raster_by_condition(session_df, session_obj):
 	# if condition == 2:
 	# 	title = 'Post-Reversal'
 	# axarr[0][0].set_title(title, pad=40, fontsize=40)
-	axarr[0][0].set_xlabel('Time since visual stimuli onset (ms)', fontsize=26)
+	axarr[0][0].set_xlabel('Time since visual stimuli onset (ms)', fontsize=40,  font='Optima')
 
-	axarr[1][0].set_ylabel('Probability of DEM', fontsize=26)
-	axarr[1][0].set_ylim([0, 1.05])
-
-	axarr[2][0].set_ylabel('Probability of Blink', fontsize=26)
-	axarr[2][0].set_xlabel('Time since visual stimuli onset (ms)', fontsize=26)
-	axarr[2][0].set_yticks(np.arange(0,1.2,0.2))
+	axarr[1][0].set_ylabel('Probability of DEM', fontsize=40, font='Optima')
+	axarr[2][0].set_ylabel('Probability of Blink', fontsize=50, font='Optima')
+	axarr[2][0].set_xlabel('Time since visual stimuli onset (ms)', fontsize=40, font='Optima')
+	axarr[2][0].set_yticks(np.arange(0,1.5,0.5))
 	
 	probability_list = [lick_data_probability, DEM_data_probability, pupil_data_probability]
 	duration_list = [lick_data_duration, DEM_data_duration, pupil_data_duration]
@@ -277,9 +286,9 @@ def raster_by_condition(session_df, session_obj):
 	# Plotting Probability and Duration for Lick, DEM, and Blink
 	for ax_index in range(3):
 		# Time Epochs
-		axarr[ax_index][0].axvline(0)
-		axarr[ax_index][0].axvline(cs_time_min)
-		axarr[ax_index][0].axvline(trace_time_min)
+		axarr[ax_index][0].axvline(0, color='black', linestyle='--')
+		axarr[ax_index][0].axvline(cs_time_min, color='black', linestyle='--')
+		axarr[ax_index][0].axvline(trace_time_min, color='black', linestyle='--')
 		if ax_index >= 1:
 			window_threshold_label = WINDOW_THRESHOLD_BLINK
 		else:
@@ -288,13 +297,16 @@ def raster_by_condition(session_df, session_obj):
 								xmax=trace_time_min-1,
 								ymin=0,
 								ymax=1,
-								alpha=0.2,
-								color='grey')
-
-		axarr[ax_index][0].legend(loc='upper right', frameon=False)
+								alpha=0.5,
+								color='lightgrey')
+		# legend outside of plot
+		axarr[ax_index][0].legend(loc='upper right', bbox_to_anchor=(1.1, 1.1), fontsize=20)
 		## Bar Graph - lick/blink probability
 		data_probability_mean = list(map(np.mean, probability_list[ax_index].values()))
 		axarr[ax_index][1].bar(list(range(num_fractals)), data_probability_mean, color=color_list, ec='black')
+		# show error bar
+		# data_probability_std = list(map(np.std, probability_list[ax_index].values()))
+		# axarr[ax_index][1].errorbar(list(range(num_fractals)), data_probability_mean, yerr=data_probability_std, fmt='o', color='black', elinewidth=2, capsize=5, capthick=2)
 		axarr[ax_index][1].set_xticks(list(range(num_fractals)))
 		axarr[ax_index][1].set_xticklabels(LABELS, fontsize=26)
 		axarr[ax_index][1].set_xlabel('Outcome')
@@ -308,11 +320,15 @@ def raster_by_condition(session_df, session_obj):
 		axarr[ax_index][2].set_xticks(list(range(num_fractals)))
 		axarr[ax_index][2].set_xticklabels(LABELS, fontsize=26)
 		axarr[ax_index][2].set_xlabel('Outcome', fontsize=26)
-		axarr[ax_index][2].set_ylabel('{}'.format(label_list_dur[ax_index]), fontsize=26)
+		axarr[ax_index][2].set_ylabel('{}'.format(label_list_dur[ax_index]), fontsize=40, font='Optima')
 
-	plot_title = 'raster_by_cond_{}.svg'.format(condition)
-	img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
 	f.tight_layout()
-	f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
-	print('  {} saved.'.format(plot_title))
-	# plt.close('all')
+	FIGURE_SAVE_PATH = session_obj.figure_path
+	if FIGURE_SAVE_PATH:
+		# save figure
+		plot_title = 'raster_by_cond_{}.svg'.format(condition)
+		img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
+		# transparent background
+		f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
+		print(f'  {plot_title} saved.')
+	plt.show()

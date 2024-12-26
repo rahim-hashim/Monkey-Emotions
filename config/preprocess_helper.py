@@ -81,6 +81,7 @@ def preprocess_data(path_obj, start_date, end_date, monkey_input, experiment_nam
     print('Pickled Files:')
     pprint(pkl_files_selected, indent=2)
     for f_index, f in enumerate(pkl_files_selected):
+      print('\nProcessing file: {}'.format(f))
       target_pickle = os.path.join(path_obj.target_path, f)
       if os.path.exists(target_pickle):
         session_dict = pd.read_pickle(target_pickle)

@@ -169,13 +169,13 @@ def plot_avg_choice_valence(session_df_correct, session_obj):
     session_df_choice['not_chosen_fractal'] = valence_other
     scatter_colors_2 = [color_dict[valence] for valence in session_df_choice['not_chosen_fractal']]
     ax.scatter(x, [-0.1]*len(x), s=2, c=scatter_colors_2)
-    block_change = np.where(np.diff(session_df_choice['condition']) != 0)[0]
+    block_change = np.where(np.diff(session_df_choice['block']) != 0)[0]
     # plot vertical lines for block change
     for b_index, block in enumerate(block_change):
       if b_index == 0:
-        ax.axvline(block-0.55, color='white', linestyle='--', linewidth=1, label='Block Change')
+        ax.axvline(block-0.55, color='yellow', linestyle='--', linewidth=1, label='Block Change')
       else:
-        ax.axvline(block-0.55, color='white', linestyle='--', linewidth=1)
+        ax.axvline(block-0.55, color='yellow', linestyle='--', linewidth=1)
     ax.set_ylim([-0.25, 1.25])
     # only ticks at 0, 0.5, 1
     ax.set_yticks([0, 0.5, 1])
@@ -192,11 +192,11 @@ def plot_avg_choice_valence(session_df_correct, session_obj):
     ax.legend(bbox_to_anchor=(1.1, 1.5), loc='upper right', fontsize=6, frameon=False)
     ax.set_title(f'{date}', fontsize=12)
     plt.tight_layout()
-
-    # save figure
-    plot_title = f'df_choice_valence_{date}.svg'
-    img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
-    # transparent background
-    f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
-    print(f'  {plot_title} saved.')
+    if FIGURE_SAVE_PATH:
+      # save figure
+      plot_title = f'df_choice_valence_{date}.svg'
+      img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
+      # transparent background
+      f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
+      print(f'  {plot_title} saved.')
     plt.show()
