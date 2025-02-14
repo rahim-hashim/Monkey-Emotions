@@ -117,6 +117,6 @@ def preprocess_data(path_obj, start_date, end_date, monkey_input, experiment_nam
   
   # add external camera data
   # session_df, session_obj = add_external_cameras(session_df, session_obj)  
-  print(indent(pformat(session_df.columns), '  '))
+  # print(indent(pformat(session_df.columns), '  '))
 
   return session_df, session_obj, error_dict, behavioral_code_dict

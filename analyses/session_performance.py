@@ -123,7 +123,7 @@ def dataframe_summary(df):
 		df_date = df[df['date'] == date]
 		df_date_correct = df_date[df_date['correct'] == 1]
 		df_percent_correct = len(df_date_correct)/len(df_date)
-		print(f'  {date}: {len(df_date):>10} trials | {len(df_date_correct):>2} correct | {df_percent_correct:.2%} correct')
+		print(f'  {date}: {len(df_date):>10} trials | {len(df_date_correct):>3} correct | {df_percent_correct:.2%} correct')
 
 	print('Blocks:')
 	for block in session_df_correct['block'].unique():

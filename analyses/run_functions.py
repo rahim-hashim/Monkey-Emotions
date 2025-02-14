@@ -68,7 +68,6 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 	plot_heatmap_choice_valence(df_choice, session_obj)
 	plot_avg_choice_valence(df_choice, session_obj)
 
-	from analyses.choice_plots import plot_heatmap_choice_valence, plot_avg_choice_valence
 	print('LOOKING ONLY AT VALENCES [-1, -0.5, 0.5, 1]')
 	df_selected_valence = df[df['valence_1'].isin([1, 0.5, -0.5, -1])]
 	plot_heatmap_choice_valence(df_selected_valence, session_obj)

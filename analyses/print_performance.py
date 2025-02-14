@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 
 
-def print_performance(session_df):
+def print_performance(session_df, select_valences=False):
   """
   Print performance metrics for a session
 
@@ -38,7 +38,13 @@ def print_performance(session_df):
     except:
       pass
 
+  # Choice Trials only
   session_df_choice = session_df_cs_on[session_df_cs_on['choice_trial'] == 1]
+  if select_valences == True:
+    session_df_choice = session_df_choice.loc[
+      (session_df_choice['valence_1'].isin([1, 0.5, -0.5, -1])) &
+      (session_df_choice['valence_2'].isin([1, 0.5, -0.5, -1]))
+    ]
   correct_choice_trials = session_df_choice[session_df_choice['correct'] == 1]
   # correct_choice_trials = correct_choice_trials[correct_choice_trials['fractal_count_in_block'] > 10]
 

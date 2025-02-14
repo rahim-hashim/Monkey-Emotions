@@ -329,6 +329,8 @@ def raster_by_condition(session_df, session_obj):
 		plot_title = 'raster_by_cond_{}.svg'.format(condition)
 		img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
 		# transparent background
+		if not os.path.exists(FIGURE_SAVE_PATH):
+			os.makedirs(FIGURE_SAVE_PATH)
 		f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
 		print(f'  {plot_title} saved.')
 	plt.show()

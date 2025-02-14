@@ -23,6 +23,28 @@ def update_choice_matrix(choice_matrix, valences, df):
         choice_matrix[v_1_index][v_2_index] = proportion_val_1
   return choice_matrix
 
+def update_choice_matrix_unsided(choice_matrix, valences, df):
+  for v_1_index, valence_1 in enumerate(valences):
+    for v_2_index, valence_2 in enumerate(valences):
+      if v_1_index == v_2_index:
+        choice_matrix[v_1_index][v_2_index] = np.nan
+        continue
+      # valence 1 and valence 2 are the choice options
+      df_valence_1_2 = df[
+        ((df['valence_1'] == valence_1) | (df['valence_2'] == valence_1)) & 
+        ((df['valence_1'] == valence_2) | (df['valence_2'] == valence_2))
+      ]
+      df_valence_1 = df_valence_1_2[df_valence_1_2['valence_1'] == valence_1]
+      df_valence_2 = df_valence_1_2[df_valence_1_2['valence_2'] == valence_1]
+                        
+      if len(df_valence_1) + len(df_valence_2) == 0:
+        # empty matrix
+        choice_matrix[v_1_index][v_2_index] = np.nan
+      else:
+        proportion_val_1 = len(df_valence_1)/(len(df_valence_1)+len(df_valence_2))
+        choice_matrix[v_1_index][v_2_index] = proportion_val_1
+  return choice_matrix
+
 def generate_ideal_matrix(choice_matrix, valences):
   for v_1_index, valence_1 in enumerate(valences):
     for v_2_index, valence_2 in enumerate(valences):
@@ -88,6 +110,89 @@ def plot_heatmap_choice_valence(df, session_obj):
       # all conditions
       elif index == len(conditions):
         choice_matrix = update_choice_matrix(choice_matrix, valences, df_choice)
+        title = 'Entire Session'
+      # ideal behavior
+      elif index == len(conditions)+1:
+        choice_matrix = generate_ideal_matrix(choice_matrix, valences)
+        title = 'Ideal Behavior'
+
+      # plot matrix
+      row = 0
+      col = index
+      if index == len(conditions)+1:
+        cbar = axarr[col].figure.colorbar(axarr[col].imshow(choice_matrix.T, cmap=cmap, vmin=0, vmax=1))
+      else:
+        axarr[col].imshow(choice_matrix.T, cmap=cmap, vmin=0, vmax=1)
+      axarr[col].set_title(title, fontsize=14)
+
+      # legend for color bar
+      if col == 0:
+        axarr[col].set_xlabel('Stimulus L/U', fontsize=12)
+        axarr[col].set_ylabel('Stimulus R/D', fontsize=12)
+      axarr[col].set_xticks(range(len(valences)))
+      axarr[col].set_yticks(range(len(valences)))
+      valence_labels = [session_obj.valence_labels[valence] for valence in valences]
+      axarr[col].set_xticklabels(valence_labels, fontsize=8)
+      axarr[col].set_yticklabels(valence_labels, fontsize=8)
+    plot_title = f'choice_heatmap_{count}.svg'
+    img_save_path = os.path.join(FIGURE_SAVE_PATH, plot_title)
+    plt.tight_layout()
+    f.savefig(img_save_path, dpi=150, bbox_inches='tight', pad_inches = 0.1, transparent=True)
+    print(f'  {plot_title} saved.')
+
+def plot_heatmap_choice_valence_unsided(df, session_obj):
+  '''heat map of choice trials'''
+  trial_count_block = [45, 90, 125, 200]
+  FIGURE_SAVE_PATH = session_obj.figure_path
+  # only get choice trials that are non-zero valence
+  for c_index, count in enumerate(trial_count_block):
+    if c_index == 0:
+      df_choice = df[(df['choice_trial'] == 1) & \
+                    (df['correct_trial_in_block'] < count)
+                  ]
+      descriptor = f'First {count} trials in block'
+    # middle trials
+    elif c_index < len(trial_count_block) - 1:
+      df_choice = df[(df['choice_trial'] == 1) & \
+                    (df['correct_trial_in_block'] >= trial_count_block[c_index-1]) & \
+                    (df['correct_trial_in_block'] < count)
+                  ]
+      descriptor = f'Trials {trial_count_block[c_index-1]} - {count} in block'
+    # all trials
+    else:
+      df_choice = df[(df['choice_trial'] == 1)]
+      descriptor = 'All trials in block'
+    print(descriptor)
+    if len(df_choice) == 0:
+      print('No choice trials to plot.')
+      return
+    else:
+      print(f'  Num Trials: {len(df_choice)}')
+    # get unique conditions
+    conditions = list(sorted(df_choice['condition'].unique()))
+    f, axarr = plt.subplots(1, len(conditions)+2, figsize=(15, 5))
+    if c_index == 0:
+      f.suptitle(f'Probability of Choosing Stimulus (< {trial_count_block[c_index]} trials in block)', fontsize=18)
+    elif c_index < len(trial_count_block) - 1:
+      f.suptitle(f'Probability of Choosing Stimulus ({trial_count_block[c_index-1]} - {count} trials in block)', fontsize=18)
+    else:
+      f.suptitle(f'Probability of Choosing Stimulus (all trials)', fontsize=18)
+    cmap = plt.cm.RdYlGn
+    cmap.set_bad(color='white')  
+    # get unique valences
+    valences = sorted(df_choice['valence_1'].unique(), reverse=True)
+    for index, plot in enumerate(range(len(axarr.flat))):
+      # empty matrix of zeros
+      choice_matrix = np.zeros((len(valences), len(valences)))
+      # condition specific
+      if index < len(conditions):
+        condition = conditions[index]
+        df_cond = df_choice[df_choice['condition'] == condition]
+        choice_matrix = update_choice_matrix_unsided(choice_matrix, valences, df_cond)
+        title = f'Block {condition}'
+      # all conditions
+      elif index == len(conditions):
+        choice_matrix = update_choice_matrix_unsided(choice_matrix, valences, df_choice)
         title = 'Entire Session'
       # ideal behavior
       elif index == len(conditions)+1:

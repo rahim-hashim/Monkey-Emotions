@@ -167,10 +167,10 @@ def session_parser(session, trial_list, trial_record, date_input, monkey_input):
 	print('Parsing UserVar data...')
 	recursive_h5py_parser(uservar_dict, trial_record)
 	# print all nested keys in uservar_dict
-	for key in uservar_dict.keys():
-		print(key)
-		for subkey in uservar_dict[key]:
-			print('  ', subkey)
+	# for key in uservar_dict.keys():
+	# 	print(key)
+	# 	for subkey in uservar_dict[key]:
+	# 		print('  ', subkey)
 
 	if trial_record != None and 'reward_stim_1' not in trial_record['User'].keys():
 		try:
