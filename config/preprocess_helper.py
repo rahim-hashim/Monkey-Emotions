@@ -102,10 +102,12 @@ def preprocess_data(path_obj, start_date, end_date, monkey_input, experiment_nam
     
   # Save path for figures
   try:
-    FIGURE_SAVE_PATH = image_diff(session_df,
-                                  session_obj,
-                                  path_obj,
-                                  combine_dates=combine_dates) # True will combine all dates into analysis
+    FIGURE_SAVE_PATH = image_diff(
+      session_df,
+      session_obj,
+      path_obj,
+      combine_dates=combine_dates
+    ) # True will combine all dates into analysis
   except:
     print('Fractal images upload error...')
     print('  No figure save path')

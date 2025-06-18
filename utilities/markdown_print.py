@@ -32,7 +32,7 @@ def configure_plotly_browser_state():
 		</script>
 		'''))
 
-def markdown_calc(df, f, behavioral_code_dict, session_obj, verbose):
+def markdown_calc(df, f, session_obj, verbose):
 
 	md_list = [] # list of all markdown text to be printed
 
@@ -337,7 +337,7 @@ def markdown_calc(df, f, behavioral_code_dict, session_obj, verbose):
 
 	return f
 
-def markdown_summary(df, behavioral_code_dict, session_obj):
+def markdown_summary(df, session_obj):
 
 	TRACKER_PATH = session_obj.tracker_path
 	MONKEY = session_obj.monkey
@@ -355,7 +355,7 @@ def markdown_summary(df, behavioral_code_dict, session_obj):
 		file_path = os.path.join(MARKDOWN_PATH, markdown_title)
 		with open(file_path, 'w') as f:
 			df_date = df[df['date'] == date]
-			f = markdown_calc(df_date, f, behavioral_code_dict, session_obj, verbose=False)
+			f = markdown_calc(df_date, f, session_obj, verbose=False)
 
 	f.close()
 
@@ -366,4 +366,4 @@ def markdown_summary(df, behavioral_code_dict, session_obj):
 	# 	f.write(all_str)	
 	# 	figure_path_date = None
 
-	# 	markdown_calc(df, f, behavioral_code_dict)
+	# 	markdown_calc(df, f)

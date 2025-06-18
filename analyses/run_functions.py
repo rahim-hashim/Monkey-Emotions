@@ -1,4 +1,4 @@
-def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error_dict):
+def run_functions(session_df, session_obj, path_obj):
 	"""
 	# Runs all analyses functions
 
@@ -6,8 +6,6 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 	# 	df (dataframe): dataframe of session data
 	# 	session_obj (Session): session object
 	# 	path_obj (Path): path object
-	# 	behavioral_code_dict (dict): dictionary of behavioral codes
-	# 	error_dict (dict): dictionary of error codes
 
 	# Returns:
 	# 	session_obj (Session): updated session object
@@ -15,7 +13,7 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 
 	# from analyses.session_performance import session_performance
 	# # All trials required to analyze performance
-	# session_performance(session_df, behavioral_code_dict, session_obj)
+	# session_performance(session_df, session_obj)
 	
 	# Only correct trials for all other analyses
 	df = session_df[session_df['correct'] == 1]
@@ -77,7 +75,7 @@ def run_functions(session_df, session_obj, path_obj, behavioral_code_dict, error
 	# # log_reg_model(df)
 
 	from utilities.markdown_print import markdown_summary
-	markdown_summary(df, behavioral_code_dict, session_obj)
+	markdown_summary(df, session_obj)
 
 	from utilities.write_to_excel import write_to_excel
 	write_to_excel(df, session_obj, path_obj)

@@ -277,8 +277,8 @@ def outcome_count_window(trial, session_obj):
 				- pupil_raster_window: rasterized pupil data for blink window
 				- pupil_zero_count: binary 1 if pupil is 0 for any timepoint in blink window
 	"""
-	TRACE_WINDOW_LICK = session_obj.window_lick
-	TRACE_WINDOW_BLINK = session_obj.window_blink
+	TRACE_WINDOW_LICK = 1500
+	TRACE_WINDOW_BLINK = 1500
 	lick_raster = trial['lick_raster']
 	DEM_raster = trial['DEM_raster']
 	pupil_data = trial['eye_pupil']

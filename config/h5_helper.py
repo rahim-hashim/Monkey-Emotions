@@ -241,8 +241,12 @@ def h5_to_df(path_obj, start_date, end_date, monkey_input, save_df):
       ml_config, trial_record, trial_list, cam1_list, cam2_list = h5_parse(f)
       experiment_name = ml_config['ExperimentName'][...].tolist().decode()
       # parse session data
-      session_dict, error_dict, behavioral_code_dict = \
-        session_parser(f, trial_list, trial_record, dates_array[f_index], monkey_input)
+      try:
+        session_dict, error_dict, behavioral_code_dict = \
+          session_parser(f, trial_list, trial_record, dates_array[f_index], monkey_input)
+      except Exception as e:
+        print(f'  Error parsing {f}: {e}')
+        continue
       # parse ML camera data
       # session_dict = \
       #   camera_parser(f, session_dict, cam1_list, cam2_list, dates_array[f_index], monkey_input)

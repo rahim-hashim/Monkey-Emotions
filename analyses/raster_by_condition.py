@@ -98,7 +98,7 @@ def raster_by_condition(session_df, session_obj):
 		ax.title.set_fontname('Optima')
 	num_fractals = len(session_df['valence'].unique())	
 
-	TRIAL_THRESHOLD = 0
+	TRIAL_THRESHOLD = 10
 
 	# only reinforcement trials
 	session_df_reinforcement = session_df[session_df['reinforcement_trial'] == 1]
@@ -317,6 +317,9 @@ def raster_by_condition(session_df, session_obj):
 		if ax_index == 0:
 			axarr[ax_index][2].set_ylim([0, 1])
 		axarr[ax_index][2].bar(list(range(num_fractals)), data_duration_mean, color=color_list, ec='black')
+		# show error bar
+		data_duration_std = list(map(np.std, duration_list[ax_index].values()))
+		axarr[ax_index][2].errorbar(list(range(num_fractals)), data_duration_mean, yerr=data_duration_std, fmt='o', color='black', elinewidth=2)
 		axarr[ax_index][2].set_xticks(list(range(num_fractals)))
 		axarr[ax_index][2].set_xticklabels(LABELS, fontsize=26)
 		axarr[ax_index][2].set_xlabel('Outcome', fontsize=26)

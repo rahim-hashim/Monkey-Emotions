@@ -13,7 +13,7 @@ def extract_number(filename):
 
 def extract_monkeyname(filename):
 	# name can be Aragorn or Bear
-	name = re.findall('Aragorn|Bear', filename)
+	name = re.findall('Aragorn|Bear|Gandalf', filename)
 	if name:
 		return name[0]
 	else:
